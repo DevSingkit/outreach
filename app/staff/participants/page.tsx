@@ -5,6 +5,20 @@ import useSWR from 'swr';
 import { supabase } from '@/lib/supabase-client';
 import { useState } from 'react';
 
+type RegistrationPet = {
+  reg_pet_id: string;
+  pet: { pet_name: string } | null;
+};
+
+type Registration = {
+  registration_id: string;
+  queue_number: number | null;
+  checkin_status: string;
+  checkin_timestamp: string | null;
+  owners: { first_name: string; last_name: string } | null;
+  registration_pets: RegistrationPet[];
+};
+
 const IconUsers = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -37,7 +51,10 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function ParticipantsPage() {
-  const { data: events } = useSWR('events', eventsApi.list);
+  const { data: events } = useSWR('events', async () => {
+  const { data } = await supabase.from('events').select('*');
+  return data;
+});
   const [search, setSearch] = useState('');
 
   const activeEvent = events?.find(
@@ -46,7 +63,13 @@ export default function ParticipantsPage() {
 
   const { data: participants, isLoading } = useSWR(
     activeEvent ? `participants-${activeEvent.event_id}` : null,
-    () => checkinApi.eventList(activeEvent!.event_id)
+    async () => {
+      const { data } = await supabase
+        .from('registrations')
+        .select('*, owners(*), registration_pets(*, pet:pets(*))')
+        .eq('event_id', activeEvent!.event_id);
+      return data;
+    }
   );
 
   const filtered = participants?.filter((p) => {
@@ -116,7 +139,7 @@ export default function ParticipantsPage() {
                   {/* FIX: use reg.registration_pets (joined), then pet.pet_name (DB column name) */}
                   <td style={{ padding: '10px 12px' }}>
                     {reg.registration_pets && reg.registration_pets.length > 0
-                      ? reg.registration_pets.map((rp) => rp.pet.pet_name).join(', ')
+                      ? reg.registration_pets.map((rp: RegistrationPet) => rp.pet?.pet_name).join(', ')
                       : '—'}
                   </td>
 
