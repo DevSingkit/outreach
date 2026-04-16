@@ -75,7 +75,7 @@ export default function LoginPage() {
       const role = authData.user?.user_metadata?.role as string;
       if (role === 'Admin') router.push('/admin/dashboard');
       else if (role === 'Staff' || role === 'Vet') router.push('/staff/dashboard');
-      else router.push('/owner/dashboard');
+      else router.push('/Staff/dashboard');
     } catch (err: unknown) {
       setServerError(err instanceof Error ? err.message : 'Invalid email or password.');
     } finally {
