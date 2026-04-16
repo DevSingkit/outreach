@@ -66,23 +66,38 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setServerError('');
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-      if (error) throw new Error(error.message);
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
+    email: data.email,
+    password: data.password,
+  });
+  if (error) throw new Error(error.message);
 
-      const role = authData.user?.user_metadata?.role as string;
-      if (role === 'Admin') router.push('/admin/dashboard');
-      else if (role === 'Staff' || role === 'Vet') router.push('/staff/dashboard');
-      else router.push('/Staff/dashboard');
-    } catch (err: unknown) {
-      setServerError(err instanceof Error ? err.message : 'Invalid email or password.');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const { data: staff } = await supabase
+    .from('staff_accounts')
+    .select('role')
+    .eq('supabase_uid', authData.user.id)
+    .maybeSingle();
+
+  if (staff?.role === 'Admin') {
+    router.push('/admin/dashboard');
+  } else if (staff?.role === 'Staff' || staff?.role === 'Vet') {
+    router.push('/staff/dashboard');
+  } else {
+    const { data: owner } = await supabase
+      .from('owners')
+      .select('owner_id')
+      .eq('supabase_uid', authData.user.id)
+      .maybeSingle();
+
+    if (owner) router.push('/owner/dashboard');
+    else throw new Error('Account not found. Please contact support.');
+  }
+} catch (err: unknown) {
+  setServerError(err instanceof Error ? err.message : 'Invalid email or password.');
+} finally {
+  setIsSubmitting(false);
+}
   };
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -265,7 +280,6 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   placeholder="••••••••••"
                   onFocus={() => setPasswordFocused(true)}
-                  {...register('password')}
                   style={{
                     width: '100%',
                     padding: '13px 48px 13px 16px',
