@@ -419,7 +419,7 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
             Register for the Event
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, margin: 0, maxWidth: 480, lineHeight: 1.7 }}>
-            Fill in your details and your pet's information below. You'll receive a QR code upon successful registration.
+            Fill in your details and your pet&apos;s information below. You&apos;ll receive a QR code upon successful registration.
           </p>
         </div>
       </div>

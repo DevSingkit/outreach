@@ -251,7 +251,7 @@ export default function ChatbotPage({ params }: { params: Promise<{ token: strin
                 Post-op Care Assistant
               </h3>
               <p style={{ color: '#6B6B6B', fontSize: 13, margin: '0 0 24px', lineHeight: 1.6 }}>
-                Ask me anything about your pet's recovery after the procedure.
+                Ask me anything about your pet&apos;s recovery after the procedure.
               </p>
               {/* Starter prompts */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

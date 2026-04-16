@@ -143,7 +143,7 @@ export default function ConfirmPage() {
             Registration Confirmed!
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, margin: 0, fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-            You're all set for the outreach event.
+            You&apos;re all set for the outreach event.
           </p>
         </div>
       </div>

@@ -1386,7 +1386,7 @@ export default function LandingPage() {
               </div>
               <h2 className="section-title">Serving Our Community Since Day One</h2>
               <p className="section-desc">
-                Northern Hills Veterinary Clinic is a community-focused facility based in Caloocan City. We believe every pet deserves quality healthcare, regardless of an owner's financial situation.
+                Northern Hills Veterinary Clinic is a community-focused facility based in Caloocan City. We believe every pet deserves quality healthcare, regardless of an owner&apos;s financial situation.
               </p>
 
               <div style={{ marginTop: 32 }}>
@@ -1547,13 +1547,13 @@ export default function LandingPage() {
               Find Us
             </div>
             <h2 className="section-title">Get in Touch</h2>
-            <p className="section-desc">Visit us at our clinic or reach out through Facebook. We're here daily from 10 AM to 6 PM.</p>
+            <p className="section-desc">Visit us at our clinic or reach out through Facebook. We&apos;re here daily from 10 AM to 6 PM.</p>
           </div>
 
           <div className="contact-grid">
             <div className="contact-card">
               <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#3A3A3A", marginBottom: 4, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Contact Information</h3>
-              <p style={{ fontSize: 13, color: "#A8A8A8", marginBottom: 8 }}>We'd love to hear from you</p>
+              <p style={{ fontSize: 13, color: "#A8A8A8", marginBottom: 8 }}>We&apos;d love to hear from you</p>
 
               {[
                 { icon: <IconMapPin size={18} />, label: "Address", value: "Adeline Arcade, Unit 12, Quirino Highway\nBarangay 182, Caloocan City, Metro Manila" },

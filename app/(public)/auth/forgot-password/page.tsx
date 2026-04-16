@@ -159,7 +159,7 @@ export default function ForgotPasswordPage() {
                 fontSize: 14, color: 'rgba(255,255,255,0.60)',
                 lineHeight: 1.7, margin: '0 0 32px',
               }}>
-                If an account exists for that email address, we've sent password reset instructions. Check your spam folder if you don't see it.
+                If an account exists for that email address, we&apos;ve sent password reset instructions. Check your spam folder if you don&apos;t see it.
               </p>
               <Link href="/auth/login" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,

@@ -28,7 +28,7 @@ export default function OwnerDashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-jakarta text-2xl font-bold text-text">Dashboard</h1>
-        <p className="text-muted text-sm font-dm">Welcome back! Here's a summary of your activity.</p>
+        <p className="text-muted text-sm font-dm">Welcome back! Here&apos;s a summary of your activity.</p>
       </div>
 
       {/* Summary Cards */}
