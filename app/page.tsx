@@ -1269,13 +1269,13 @@ export default function LandingPage() {
           </ul>
 
           <div style={{ display: "flex", gap: "10px" }}>
-            <link href="/auth/login" className="nav-link" style={{ fontWeight: 600 }}>
+            <Link href="/auth/login" className="nav-link" style={{ fontWeight: 600 }}>
               Login
-            </link>
+            </Link>
 
-            <link href="/events" className="nav-cta">
+            <Link href="/events" className="nav-cta">
               Sign Up
-            </link>
+            </Link>
           </div>
 
           <button className="nav-mobile-toggle" onClick={() => setMenuOpen(true)}>
@@ -1290,12 +1290,12 @@ export default function LandingPage() {
           <IconX size={20} />
         </button>
         {NAV_ITEMS.map((item) => (
-          <div key={item.href} className="mobile-menu-link" onClick={() => scrollTo(item.href)}>
+          <div key={item.href} className="mobile-menu-Link" onClick={() => scrollTo(item.href)}>
             {item.label}
           </div>
         ))}
-        <link href="/auth/login" className="mobile-menu-link">Login</link>
-        <link href="/events" className="mobile-menu-cta">Sign Up</link>
+        <Link href="/auth/login" className="mobile-menu-Link">Login</Link>
+        <Link href="/events" className="mobile-menu-cta">Sign Up</Link>
       </div>
 
       {/* ── Hero ── */}
@@ -1519,9 +1519,9 @@ export default function LandingPage() {
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", marginBottom: 24, lineHeight: 1.6 }}>
                 View upcoming outreach schedules and register your pet online.
               </div>
-              <link href="/events" style={{ display: "block", padding: "14px 20px", background: "white", color: "#7B2CBF", borderRadius: 12, fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <Link href="/events" style={{ display: "block", padding: "14px 20px", background: "white", color: "#7B2CBF", borderRadius: 12, fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 See Upcoming Events
-              </link>
+              </Link>
             </div>
           </div>
 
