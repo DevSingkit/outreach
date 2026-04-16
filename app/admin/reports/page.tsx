@@ -35,6 +35,17 @@ function exportCSV(data: Record<string, unknown>[], filename: string) {
   URL.revokeObjectURL(url);
 }
 
+interface BillingRecord {
+  registrations: {
+    owners: { first_name: string; last_name: string } | null;
+    events: { event_name: string } | null;
+  } | null;
+  amount: number;
+  payment_status: string;
+  payment_method: string;
+  created_at: string;
+}
+
 const paymentStatusMap: Record<string, { bg: string; color: string }> = {
   Paid:   { bg: '#D4EDDA', color: '#155724' },
   Unpaid: { bg: '#FFF3CD', color: '#856404' },
@@ -87,7 +98,7 @@ export default function AdminReportsPage() {
   if (from) query = query.gte('created_at', from);
   if (to) query = query.lte('created_at', to);
   const { data } = await query;
-  return data?.map((r: any) => ({
+  return data?.map((r: BillingRecord) => ({
     owner_name: `${r.registrations?.owners?.first_name} ${r.registrations?.owners?.last_name}`,
     event_name: r.registrations?.events?.event_name,
     amount: r.amount,

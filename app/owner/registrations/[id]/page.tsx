@@ -9,6 +9,20 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { ParticipantTimeline } from '@/components/ParticipantTimeline';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
 
+interface RegistrationPet {
+  procedure_status: string;
+  pets: {
+    pet_id: string;
+    pet_name: string;
+    species: string;
+  };
+}
+
+interface ChatbotSession {
+  expires_at: string;
+  session_token: string;
+}
+
 export default function OwnerRegistrationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { data: reg, isLoading } = useSWR(`reg-${id}`, async () => {
@@ -29,7 +43,7 @@ export default function OwnerRegistrationDetailPage({ params }: { params: Promis
 
   // Check for active chatbot session
   const activeSession = reg.chatbot_sessions?.find(
-    (s: { expires_at: string }) => new Date(s.expires_at) > new Date()
+    (s: ChatbotSession) => new Date(s.expires_at) > new Date()
   );
 
   return (
@@ -47,7 +61,7 @@ export default function OwnerRegistrationDetailPage({ params }: { params: Promis
         <ParticipantTimeline
           registeredAt={reg.created_at}
           checkinTimestamp={reg.checkin_timestamp}
-          procedureDone={reg.registration_pets?.every((rp: any) => rp.procedure_status === 'Done')}
+          procedureDone={reg.registration_pets?.every((rp: RegistrationPet) => rp.procedure_status === 'Done')}
           paymentSettled={reg.billing_record?.payment_status === 'Paid'}
           dischargeTimestamp={reg.discharge_timestamp}
         />
@@ -64,7 +78,7 @@ export default function OwnerRegistrationDetailPage({ params }: { params: Promis
       <div className="bg-surface rounded-card p-6 shadow-sm">
         <h2 className="font-jakarta font-semibold text-text mb-4">Registered Pets</h2>
         <div className="space-y-3">
-          {reg.registration_pets?.map((rp: any) => (
+          {reg.registration_pets?.map((rp: RegistrationPet) => (
             <div key={rp.pets.pet_id} className="flex items-center justify-between p-3 bg-background rounded-xl">
               <div>
                 <p className="text-sm font-semibold font-dm text-text">{rp.pets.pet_name}</p>

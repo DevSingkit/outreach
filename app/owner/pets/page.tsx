@@ -5,20 +5,36 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase-client';
 import { PawPrint, ChevronRight } from 'lucide-react';
 
+interface Pet {
+  pet_id: string;
+  pet_name: string;
+  species: string;
+  sex: string;
+  breed?: string;
+}
+
+interface RegistrationPet {
+  pets: Pet | null;
+}
+
+interface Registration {
+  registration_pets: RegistrationPet[];
+}
+
 export default function OwnerPetsPage() {
   const { data: registrations, isLoading } = useSWR('my-regs', async () => {
   const { data } = await supabase
     .from('registrations')
     .select('*, registration_pets(*, pets(*))');
-  return data;
+  return (data ?? []) as Registration[];
 });
 
   const pets = registrations
   ? Object.values(
-      registrations.flatMap((r: any) =>
-        (r.registration_pets ?? []).map((rp: any) => rp.pets).filter(Boolean)
-      ).reduce<Record<string, any>>(
-        (acc, pet) => { acc[pet.pet_id] = pet; return acc; },
+      registrations.flatMap((r: Registration) =>
+          (r.registration_pets ?? []).map((rp: RegistrationPet) => rp.pets).filter(Boolean)
+        ).filter((pet): pet is Pet => pet !== null).reduce<Record<string, Pet>>(
+          (acc, pet) => { acc[pet.pet_id] = pet; return acc; },
         {}
       )
     )
@@ -41,7 +57,7 @@ export default function OwnerPetsPage() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {(pets as { pet_id: string; name: string; species: string; sex: string; breed?: string }[]).map(pet => (
+        {pets.map(pet => (
           <Link
             key={pet.pet_id}
             href={`/owner/pets/${pet.pet_id}`}
@@ -51,7 +67,7 @@ export default function OwnerPetsPage() {
               <PawPrint size={20} className="text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-jakarta font-semibold text-text">{pet.name}</p>
+              <p className="font-jakarta font-semibold text-text">{pet.pet_name}</p>
               <p className="text-xs text-muted font-dm mt-0.5">{pet.species} · {pet.sex}{pet.breed ? ` · ${pet.breed}` : ''}</p>
             </div>
             <ChevronRight size={18} className="text-muted shrink-0" />

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, use } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
@@ -207,7 +207,7 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
   const [focused, setFocused] = useState<string | null>(null);
 
   const { register, control, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema) as Resolver<FormValues>,
     // FIX: default value key is now pet_name to match DB
     defaultValues: { pets: [{ pet_name: '', species: 'Dog', sex: 'Male', age_years: undefined, age_months: undefined, weight_kg: undefined }], create_account: false },
   });

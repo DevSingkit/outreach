@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
@@ -72,6 +72,16 @@ const eventSchema = z.object({
 });
 type EventForm = z.infer<typeof eventSchema>;
 
+interface AdminEvent {
+  event_id: string;
+  event_name: string;
+  event_date: string;
+  location_address: string;
+  status: string;
+  max_capacity: number;
+  registered_count?: number;
+}
+
 // ─── Focused Input ────────────────────────────────────────────────────────────
 function FocusInput({ as: Tag = 'input', ...props }: { as?: 'input' | 'textarea'; [key: string]: unknown }) {
   const [focused, setFocused] = useState(false);
@@ -89,7 +99,7 @@ function FocusInput({ as: Tag = 'input', ...props }: { as?: 'input' | 'textarea'
 export default function AdminEventsPage() {
   const { data: events, isLoading, mutate } = useSWR('admin-events', async () => {
   const { data } = await supabase.from('events').select('*').order('event_date', { ascending: false });
-  return data;
+  return data as AdminEvent[] | null;
     });
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -97,7 +107,7 @@ export default function AdminEventsPage() {
   const [hovered, setHovered] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<EventForm>({
-    resolver: zodResolver(eventSchema) as any,
+    resolver: zodResolver(eventSchema) as Resolver<EventForm>,
   });
 
   const onSubmit = async (data: EventForm) => {
@@ -170,7 +180,7 @@ export default function AdminEventsPage() {
 
       {/* Event cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {events?.map((event: { event_id: string; event_name: string; event_date: string; location_address: string; status: string; max_capacity: number; registered_count?: number }) => (
+        {events?.map((event: AdminEvent) => (
           <div key={event.event_id} style={{
             background: '#FFFFFF', borderRadius: 16,
             boxShadow: hovered === event.event_id ? '0 16px 40px rgba(123,44,191,0.08)' : '0 12px 40px rgba(97,0,164,0.04)',
