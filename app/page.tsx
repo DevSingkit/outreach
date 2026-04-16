@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from 'next/link';
 
 // ─── Icon Components ──────────────────────────────────────────────────────────
 
@@ -1268,13 +1269,13 @@ export default function LandingPage() {
           </ul>
 
           <div style={{ display: "flex", gap: "10px" }}>
-            <a href="/auth/login" className="nav-link" style={{ fontWeight: 600 }}>
+            <link href="/auth/login" className="nav-link" style={{ fontWeight: 600 }}>
               Login
-            </a>
+            </link>
 
-            <a href="/events" className="nav-cta">
+            <link href="/events" className="nav-cta">
               Sign Up
-            </a>
+            </link>
           </div>
 
           <button className="nav-mobile-toggle" onClick={() => setMenuOpen(true)}>
@@ -1293,8 +1294,8 @@ export default function LandingPage() {
             {item.label}
           </div>
         ))}
-        <a href="/auth/login" className="mobile-menu-link">Login</a>
-        <a href="/events" className="mobile-menu-cta">Sign Up</a>
+        <link href="/auth/login" className="mobile-menu-link">Login</link>
+        <link href="/events" className="mobile-menu-cta">Sign Up</link>
       </div>
 
       {/* ── Hero ── */}
@@ -1518,9 +1519,9 @@ export default function LandingPage() {
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", marginBottom: 24, lineHeight: 1.6 }}>
                 View upcoming outreach schedules and register your pet online.
               </div>
-              <a href="/events" style={{ display: "block", padding: "14px 20px", background: "white", color: "#7B2CBF", borderRadius: 12, fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <link href="/events" style={{ display: "block", padding: "14px 20px", background: "white", color: "#7B2CBF", borderRadius: 12, fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 See Upcoming Events
-              </a>
+              </link>
             </div>
           </div>
 

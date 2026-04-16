@@ -5,6 +5,7 @@ import { use } from 'react';
 import useSWR from 'swr';
 import { supabase } from '@/lib/supabase-client';
 import { StatusBadge } from '@/components/StatusBadge';
+import Link from 'next/link';
 
 const IconCalendar = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -88,7 +89,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           <IconCalendar size={28} />
         </div>
         <p style={{ color: '#C0392B', fontFamily: "'Be Vietnam Pro', sans-serif", fontSize: 15, marginBottom: 12 }}>Event not found.</p>
-        <a href="/events" style={{ color: '#7B2CBF', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>← Back to Events</a>
+        <link href="/events" style={{ color: '#7B2CBF', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>← Back to Events</link>
       </div>
     </div>
   );
@@ -118,9 +119,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             fontSize: 12, color: 'rgba(255,255,255,0.45)',
             fontFamily: "'Be Vietnam Pro', sans-serif",
           }}>
-            <a href="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</a>
+            <link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>Home</link>
             <IconChevronRight size={11} />
-            <a href="/events" style={{ color: 'inherit', textDecoration: 'none' }}>Events</a>
+            <link href="/events" style={{ color: 'inherit', textDecoration: 'none' }}>Events</link>
             <IconChevronRight size={11} />
             <span style={{ color: 'rgba(255,255,255,0.75)' }}>{event.event_name}</span>
           </div>
@@ -320,7 +321,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   <p style={{ color: 'rgba(255,255,255,0.65)', fontFamily: "'Be Vietnam Pro', sans-serif", fontSize: 14, margin: '0 0 28px', lineHeight: 1.6 }}>
                     No account needed. Fill out the form and receive your QR code instantly.
                   </p>
-                  <a
+                  <link
                     href={`/register/${event.event_id}`}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -341,7 +342,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     }}
                   >
                     Register Your Pet <IconArrowRight size={15} />
-                  </a>
+                  </link>
                 </>
               ) : (
                 <>
@@ -378,14 +379,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* Back link */}
-          <a href="/events" style={{
+          <link href="/events" style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             color: '#7B2CBF', fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontWeight: 600, fontSize: 13, textDecoration: 'none',
           }}>
             <IconArrowLeft size={14} />
             Back to all events
-          </a>
+          </link>
         </div>
       </div>
     </div>
