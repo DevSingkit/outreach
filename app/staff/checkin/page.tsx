@@ -22,65 +22,11 @@ const walkinSchema = z.object({
 });
 type WalkinForm = z.infer<typeof walkinSchema>;
  
-const IconPaw = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-<path d="M12 2C10.34 2 9 3.34 9 5s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm-5 4C5.34 6 4 7.34 4 9s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm10 0c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM5.5 14C3.57 14 2 15.57 2 17.5S3.57 21 5.5 21c.96 0 1.83-.38 2.48-1H16c.65.62 1.52 1 2.48 1C20.43 21 22 19.43 22 17.5S20.43 14 18.48 14c-1.5 0-2.78.87-3.43 2.13C14.57 16.05 13.82 16 13 16h-2c-.82 0-1.57.05-2.05.13C8.3 14.87 7.02 14 5.5 14z" />
-</svg>
-);
- 
-const IconHome = ({ size = 20 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-</svg>
-);
+
+
 const IconQr = ({ size = 20 }: { size?: number }) => (
 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="5" y="5" width="3" height="3" /><rect x="16" y="5" width="3" height="3" /><rect x="16" y="16" width="3" height="3" /><rect x="5" y="16" width="3" height="3" />
-</svg>
-);
-const IconList = ({ size = 20 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
-</svg>
-);
-const IconUsers = ({ size = 20 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-</svg>
-);
-const IconArrowLeft = ({ size = 20 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
-</svg>
-);
-const IconCreditCard = ({ size = 16 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" />
-</svg>
-);
-const IconLogOut = ({ size = 16 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-</svg>
-);
-const IconStethoscope = ({ size = 20 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" /><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" /><circle cx="20" cy="10" r="2" />
-</svg>
-);
-const IconScissors = ({ size = 16 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><line x1="20" y1="4" x2="8.12" y2="15.88" /><line x1="14.47" y1="14.48" x2="20" y2="20" /><line x1="8.12" y1="8.12" x2="12" y2="12" />
-</svg>
-);
-const IconSave = ({ size = 16 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" />
-</svg>
-);
-const IconSearch = ({ size = 16 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
 </svg>
 );
 const IconUserPlus = ({ size = 16 }: { size?: number }) => (
@@ -101,21 +47,6 @@ const IconTrash = ({ size = 14 }: { size?: number }) => (
 const IconX = ({ size = 18 }: { size?: number }) => (
 <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-</svg>
-);
-const IconActivity = ({ size = 20 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-</svg>
-);
-const IconBell = ({ size = 20 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-</svg>
-);
-const IconUser = ({ size = 20 }: { size?: number }) => (
-<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
 </svg>
 );
 const IconAlertTriangle = ({ size = 18 }: { size?: number }) => (
@@ -228,27 +159,8 @@ ongoing: { bg: '#D1ECF1', color: '#0C5460' },
 Ongoing: { bg: '#D1ECF1', color: '#0C5460' },
 closed: { bg: '#F8D7DA', color: '#721C24' },
 };
- 
-function StatusBadge({ status }: { status: string }) {
-const s = statusMap[status] ?? { bg: '#E2E3E5', color: '#383D41' };
-return (
-<span style={{ padding: '3px 11px', borderRadius: 100, fontSize: 11, fontWeight: 600, background: s.bg, color: s.color, fontFamily: fonts.vietnam, whiteSpace: 'nowrap' }}>
-{status}
-</span>
-);
-}
- 
-// ─── BACK LINK ───────────────────────────────────────────────
- 
-function BackLink({ href, label = 'Back to Queue' }: { href: string; label?: string }) {
-return (
-<a href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: colors.textMuted, textDecoration: 'none', fontFamily: fonts.vietnam, fontSize: 14, transition: 'color 0.2s' }}
-onMouseEnter={e => (e.currentTarget.style.color = colors.primary)}
-onMouseLeave={e => (e.currentTarget.style.color = colors.textMuted)}>
-<IconArrowLeft size={16} /> {label}
-</a>
-);
-}
+
+
  
 // ─── SPINNER ─────────────────────────────────────────────────
  
@@ -373,7 +285,7 @@ export default function CheckinPage() {
  
       {/* Mode toggle */}
       <div style={{ display: 'flex', background: colors.surface, borderRadius: 12, padding: 4, marginBottom: 24, gap: 4, width: 'fit-content', boxShadow: '0 4px 16px rgba(97,0,164,0.06)' }}>
-        {([['scan', <IconQr size={15} />, 'QR Scan'], ['walkin', <IconUserPlus size={15} />, 'Walk-in']] as const).map(([key, icon, label]) => (
+        {([{ key: 'scan', icon: <IconQr size={15} />, label: 'QR Scan' }, { key: 'walkin', icon: <IconUserPlus size={15} />, label: 'Walk-in' }] as const).map(({ key, icon, label }) => (
           <button key={key} onClick={() => setMode(key as 'scan' | 'walkin')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 20px', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: fonts.jakarta, fontWeight: 600, fontSize: 13, transition: 'all 0.2s', background: mode === key ? 'linear-gradient(135deg,#7B2CBF,#A66DD4)' : 'transparent', color: mode === key ? 'white' : colors.textSoft }}>
             {icon} {label}
           </button>

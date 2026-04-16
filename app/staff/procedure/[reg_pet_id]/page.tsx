@@ -1,12 +1,17 @@
 // staff/procedure/[reg_pet_id]/page.tsx
 'use client';
-
-import { use, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase-client';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+
+interface ProcedureForm {
+  procedure_type: string;
+  medications_given: string;
+  procedure_notes: string;
+}
+
 
 const inputCls =
   'w-full bg-[#EDEDED] rounded-input px-4 py-2.5 text-sm font-dm text-text placeholder:text-muted outline-none transition focus:bg-white focus:ring-2 focus:ring-primary/30';
@@ -23,39 +28,12 @@ export default function ProcedurePage({
   const [error, setError] = useState('');
   const [authError, setAuthError] = useState('');
 
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit } = useForm<ProcedureForm>();
 
-  useState(() => {
-    authApi
-      .me()
-      .then((auth) => {
-        if (auth.role !== 'Staff' && auth.role !== 'Admin') {
-          setAuthError('Only Staff can record procedures.');
-        }
-      })
-      .catch(() => {});
-  });
-
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: ProcedureForm) => {
     setIsSubmitting(true);
     setError('');
 
-    try {
-      await procedureApi.submit({
-        reg_pet_id,
-        procedure_type: data.procedure_type,
-        medications_given: data.medications_given
-          ? data.medications_given.split(',').map((m: string) => m.trim())
-          : null,
-        procedure_notes: data.procedure_notes,
-      });
-
-      router.push('/staff/queue');
-    } catch (err: any) {
-      setError(err.message || 'Failed to save procedure.');
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   if (authError) {
