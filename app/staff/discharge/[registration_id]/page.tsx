@@ -1,8 +1,9 @@
 // staff/discharge/[registration_id]/page.tsx
+'use client';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
 import { DischargeBlocker } from '@/components/DischargeBlocker';
-import { useState } from 'react';
+import { use, useState } from 'react';
 
 const IconPaw = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
 <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -241,23 +242,32 @@ const Spinner = () => (
 
 
  
-export default function DischargePage({params,}: {params: { registration_id: string };}) {
-  const { registration_id } = params;
+export default function DischargePage({ params }: { params: Promise<{ registration_id: string }> }) {
+  const { registration_id } = use(params);
   const router = useRouter();
   const [isDischarging, setIsDischarging] = useState(false);
   const [blockerCode, setBlockerCode] = useState('');
   const [success, setSuccess] = useState(false);
  
   const handleDischarge = async () => {
-    setIsDischarging(true); setBlockerCode('');
-    try {
-      await dischargeApi.discharge(registration_id);
-      setSuccess(true);
-      setTimeout(() => router.push('/staff/queue'), 2000);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '';
-      setBlockerCode(msg);
-    } finally { setIsDischarging(false); }
+    // Check all pets are completed
+    const { data: regPets, error: regPetsError } = await supabase
+      .from('registration_pets')
+      .select('procedure_status, billing_status')
+      .eq('registration_id', registration_id);
+    if (regPetsError) throw new Error(regPetsError.message);
+
+    const incomplete = regPets?.find(p => p.procedure_status !== 'Completed');
+    if (incomplete) throw new Error('incomplete_procedures');
+
+    const unpaid = regPets?.find(p => p.billing_status !== 'Paid' && p.billing_status !== 'Waived');
+    if (unpaid) throw new Error('unpaid_billing');
+
+    const { error: dischargeError } = await supabase
+      .from('registrations')
+      .update({ checkin_status: 'Discharged' })
+      .eq('registration_id', registration_id);
+    if (dischargeError) throw new Error(dischargeError.message);
   };
  
   return (
