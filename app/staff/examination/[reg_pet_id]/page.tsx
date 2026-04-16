@@ -1,10 +1,9 @@
 'use client';
 
-import { supabase } from '@/lib/supabase-client';
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
+import { supabase } from '@/lib/supabase-client';
 
 /* ─── ICONS ─── */
 
@@ -131,42 +130,23 @@ type ExamFormValues = {
 
 /* ─── COMPONENT ─── */
 
-export default function ExaminationPage({ params }: { params: { reg_pet_id: string } }) {
-  const { reg_pet_id } = params;
+export default function ExaminationPage({ params }: { params: Promise<{ reg_pet_id: string }> }) {
+  const { reg_pet_id } = use(params);
   const router = useRouter();
 
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch current staff user — examined_by is a required UUID FK
-  const { data: me } = useSWR('auth-me', () => authApi.me());
 
-  // Fetch existing examination record for this reg_pet
-  const { data: existing, mutate } = useSWR(
-    `exam-${reg_pet_id}`,
-    () => examinationApi.getById(reg_pet_id)
-  );
-
-  const { register, handleSubmit, watch, reset } = useForm<ExamFormValues>({
+  const { register, handleSubmit, watch } = useForm<ExamFormValues>({
     // Populate form with existing data when it loads
-    values: existing
-      ? {
-          actual_weight_kg: existing.actual_weight_kg,
-          body_condition: existing.body_condition ?? '',
-          acceptance_status: existing.acceptance_status,
-          rejection_reason: existing.rejection_reason ?? '',
-        }
-      : undefined,
+    
   });
 
   const status = watch('acceptance_status');
 
   const onSubmit = async (data: ExamFormValues) => {
-    if (!me?.userId) {
-      setError('Could not resolve staff identity. Please refresh.');
-      return;
-    }
-
+    
     if (data.acceptance_status === 'Rejected' && !data.rejection_reason?.trim()) {
       setError('Rejection reason is required when rejecting.');
       return;
@@ -181,16 +161,16 @@ export default function ExaminationPage({ params }: { params: { reg_pet_id: stri
     setError('');
 
     try {
-      await examinationApi.submit({
-        reg_pet_id,
-        actual_weight_kg: data.actual_weight_kg ? Number(data.actual_weight_kg) : undefined,
-        body_condition: data.body_condition || undefined,
-        acceptance_status: data.acceptance_status as 'Accepted' | 'Rejected',
-        rejection_reason: data.acceptance_status === 'Rejected' ? data.rejection_reason : undefined,
-        examined_by: me.userId, // required UUID FK → staff_accounts.staff_id
-      });
-
-      await mutate(); // revalidate existing record
+      const { error: submitError } = await supabase
+        .from('examinations')
+        .upsert({
+          reg_pet_id,
+          actual_weight_kg: data.actual_weight_kg ? Number(data.actual_weight_kg) : null,
+          body_condition: data.body_condition || null,
+          acceptance_status: data.acceptance_status,
+          rejection_reason: data.acceptance_status === 'Rejected' ? data.rejection_reason : null,
+        }, { onConflict: 'reg_pet_id' });
+      if (submitError) throw new Error(submitError.message);
       router.push('/staff/queue');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to save examination record.');
@@ -198,8 +178,6 @@ export default function ExaminationPage({ params }: { params: { reg_pet_id: stri
       setIsSubmitting(false);
     }
   };
-
-  const isReadOnly = !!existing?.exam_id; // already submitted — show read-only view
 
   return (
     <div style={{ maxWidth: 600 }}>
@@ -230,126 +208,6 @@ export default function ExaminationPage({ params }: { params: { reg_pet_id: stri
           Pre-op Examination
         </h1>
       </div>
-
-      {/* Existing record summary (read-only) */}
-      {existing?.exam_id && (
-        <div style={{
-          ...cardStyle,
-          marginBottom: 20,
-          border: `1px solid ${colors.border}`,
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <strong style={{ fontFamily: fonts.jakarta, fontSize: 14 }}>Examination Record</strong>
-            <StatusBadge status={existing.acceptance_status} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: colors.textSoft, fontFamily: fonts.vietnam }}>
-            <div><strong>Exam ID:</strong> {existing.exam_id}</div>
-            <div><strong>Weight:</strong> {existing.actual_weight_kg != null ? `${existing.actual_weight_kg} kg` : '—'}</div>
-            <div><strong>Body Condition:</strong> {existing.body_condition ?? '—'}</div>
-            {existing.rejection_reason && (
-              <div><strong>Rejection Reason:</strong> {existing.rejection_reason}</div>
-            )}
-            <div>
-              <strong>Examined:</strong>{' '}
-              {existing.examined_at ? new Date(existing.examined_at).toLocaleString() : '—'}
-            </div>
-            <div><strong>Staff ID:</strong> {existing.examined_by}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Form — hidden if already submitted */}
-      {!isReadOnly && (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: 18 }}
-        >
-          {/* Weight */}
-          <div>
-            <label style={labelStyle}>Actual Weight (kg)</label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              style={inputStyle}
-              placeholder="e.g. 4.5"
-              {...register('actual_weight_kg')}
-            />
-          </div>
-
-          {/* Body Condition */}
-          <div>
-            <label style={labelStyle}>Body Condition</label>
-            <select style={inputStyle} {...register('body_condition')}>
-              <option value="">Select…</option>
-              <option>Good</option>
-              <option>Fair</option>
-              <option>Poor</option>
-            </select>
-          </div>
-
-          {/* Decision */}
-          <div>
-            <label style={labelStyle}>Decision *</label>
-            <select style={inputStyle} {...register('acceptance_status')} required>
-              <option value="">Select…</option>
-              <option value="Accepted">Accepted</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
-
-          {/* Rejection Reason — only shown when Rejected */}
-          {status === 'Rejected' && (
-            <div>
-              <label style={labelStyle}>Rejection Reason *</label>
-              <textarea
-                rows={3}
-                style={{ ...inputStyle, resize: 'vertical' }}
-                placeholder="Describe why the pet cannot proceed…"
-                {...register('rejection_reason')}
-              />
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              background: '#FDF2F2',
-              border: '1px solid rgba(192,57,43,0.2)',
-              borderRadius: 10,
-              padding: '12px 16px',
-              color: colors.error,
-              fontSize: 13,
-              fontFamily: fonts.vietnam,
-            }}>
-              <IconAlertTriangle size={16} /> {error}
-            </div>
-          )}
-
-          {/* Submit */}
-          <button type="submit" style={{ ...primaryBtn, opacity: isSubmitting ? 0.7 : 1 }} disabled={isSubmitting}>
-            <IconSave size={16} />
-            {isSubmitting ? 'Saving…' : 'Save Examination'}
-          </button>
-        </form>
-      )}
-
-      {/* If already submitted, show re-submit option (e.g. correction) */}
-      {isReadOnly && (
-        <div style={{ marginTop: 16, textAlign: 'center', fontSize: 13, color: colors.textMuted, fontFamily: fonts.vietnam }}>
-          Examination already recorded.{' '}
-          <button
-            onClick={() => reset()}
-            style={{ background: 'none', border: 'none', color: colors.primary, cursor: 'pointer', fontFamily: fonts.vietnam, fontSize: 13, textDecoration: 'underline' }}
-          >
-            Submit correction
-          </button>
-        </div>
-      )}
     </div>
   );
 }
