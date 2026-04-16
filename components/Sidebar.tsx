@@ -1,3 +1,4 @@
+// components/Sidebar.tsx
 'use client';
 
 import Link from 'next/link';
@@ -19,6 +20,12 @@ interface SidebarProps {
 }
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
+
+const IconPaw = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M12 2C10.34 2 9 3.34 9 5s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm-5 4C5.34 6 4 7.34 4 9s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm10 0c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM5.5 14C3.57 14 2 15.57 2 17.5S3.57 21 5.5 21c.96 0 1.83-.38 2.48-1H16c.65.62 1.52 1 2.48 1C20.43 21 22 19.43 22 17.5S20.43 14 18.48 14c-1.5 0-2.78.87-3.43 2.13C14.57 16.05 13.82 16 13 16h-2c-.82 0-1.57.05-2.05.13C8.3 14.87 7.02 14 5.5 14z" />
+  </svg>
+);
 
 function IconLogOut({ size = 20 }: { size?: number }) {
   return (
@@ -89,6 +96,64 @@ function NavLink({
   );
 }
 
+// ─── Logo ─────────────────────────────────────────────────────────────────────
+
+function SidebarLogo() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '20px 20px 16px',
+        borderBottom: '1px solid rgba(123, 44, 191, 0.08)',
+      }}
+    >
+      {/* Icon box — matches landing page nav-logo-icon */}
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          background: 'linear-gradient(135deg, #7B2CBF, #A66DD4)',
+          borderRadius: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          flexShrink: 0,
+        }}
+      >
+        <IconPaw size={20} />
+      </div>
+
+      {/* Text — matches landing page nav-logo-text */}
+      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+        <span
+          style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 13,
+            fontWeight: 700,
+            color: '#7B2CBF',
+            letterSpacing: '-0.2px',
+          }}
+        >
+          Northern Hills Vet
+        </span>
+        <span
+          style={{
+            fontSize: 10,
+            color: '#A8A8A8',
+            fontWeight: 400,
+            letterSpacing: '0.3px',
+          }}
+        >
+          Caloocan City, Metro Manila
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 
 export function Sidebar({
@@ -137,31 +202,12 @@ export function Sidebar({
       {/* ── Mobile drawer ───────────────────────── */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-[240px] bg-background flex flex-col
+          fixed top-0 left-0 z-50 h-full w-[240px] bg-surface flex flex-col
           transition-transform duration-300 shadow-xl md:hidden
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className="flex items-center gap-2 px-6 py-5 border-b border-muted/20">
-          <span className="w-8 h-8 rounded-btn bg-primary flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 21s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 7.2C20 16.5 12 21 12 21z"
-              />
-            </svg>
-          </span>
-          <span className="font-jakarta font-bold text-text text-base">
-            {clinicName}
-          </span>
-        </div>
+        <SidebarLogo />
 
         <div className="flex-1 overflow-y-auto py-4">
           <NavList onClickItem={() => setMobileOpen(false)} />
@@ -169,28 +215,9 @@ export function Sidebar({
       </aside>
 
       {/* ── Desktop sidebar ───────────────────────── */}
-      <aside className="hidden md:flex flex-col fixed top-0 left-0 h-full w-[240px] bg-background z-30">
+      <aside className="hidden md:flex flex-col fixed top-0 left-0 h-full w-[240px] bg-surface border-r border-muted/20 z-30">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-6 py-5 border-b border-muted/20">
-          <span className="w-8 h-8 rounded-btn bg-primary flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 21s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 7.2C20 16.5 12 21 12 21z"
-              />
-            </svg>
-          </span>
-          <span className="font-jakarta font-bold text-text text-base">
-            {clinicName}
-          </span>
-        </div>
+        <SidebarLogo />
 
         {/* Nav */}
         <div className="flex-1 overflow-y-auto py-4">

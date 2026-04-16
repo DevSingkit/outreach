@@ -46,9 +46,13 @@ const staffSchema = z.object({
 type StaffForm = z.infer<typeof staffSchema>;
 
 async function fetchStaff() {
-  const res = await fetch('/api/admin/staff');
-  if (!res.ok) throw new Error('Failed to fetch');
-  return res.json();
+  const { data, error } = await supabase
+    .from('staff_accounts')
+    .select('*')
+    .order('created_at', { ascending: false });
+  console.log('fetchStaff:', data, error); // ← add this
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 // ─── Focused Input ────────────────────────────────────────────────────────────
@@ -75,8 +79,7 @@ const roleColours: Record<string, { bg: string; color: string }> = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminStaffPage() {
-  const { data, isLoading, mutate } = useSWR('admin-staff', fetchStaff);
-  const staffList = data?.staff;
+  const { data: staffList, isLoading, mutate } = useSWR('admin-staff', fetchStaff);
   
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,17 +91,34 @@ export default function AdminStaffPage() {
   });
 
   const onSubmit = async (data: StaffForm) => {
-    setIsSubmitting(true); setError('');
-    try {
-      await adminApi.createStaff(data); await mutate(); setShowModal(false); reset();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create staff.');
-    } finally { setIsSubmitting(false); }
-  };
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      user_metadata: { role: data.role },
+      email_confirm: true,
+    });
+    if (authError) throw new Error(authError.message);
+
+    const { error: insertError } = await supabase
+      .from('staff_accounts')
+      .insert({
+        supabase_uid: authData.user.id,
+        full_name: `${data.first_name} ${data.last_name}`,
+        email: data.email,
+        role: data.role,
+        is_active: true,
+      });
+    if (insertError) throw new Error(insertError.message);
+  await mutate(); setShowModal(false); reset();
+  };  // ← closes onSubmit
 
   const toggleActive = async (id: string, current: boolean) => {
-    try { await adminApi.updateStaff(id, { is_active: !current }); await mutate(); }
-    catch (err: unknown) { alert(err instanceof Error ? err.message : 'Failed to update'); }
+    const { error } = await supabase
+      .from('staff_accounts')
+      .update({ is_active: !current })
+      .eq('staff_id', id);
+    if (error) throw new Error(error.message);
+    await mutate();
   };
 
   return (
@@ -161,10 +181,10 @@ export default function AdminStaffPage() {
               </tr>
             </thead>
             <tbody>
-              {staffList?.map((s: { id: string; first_name: string; last_name: string; email: string; role: string; is_active: boolean; created_at: string }) => {
+              {staffList?.map((s: { staff_id: string; supabase_uid: string | null; full_name: string; email: string; role: string; is_active: boolean; created_at: string }) => {
                 const rc = roleColours[s.role] ?? roleColours.Staff;
                 return (
-                  <tr key={s.id} style={{ transition: 'background 0.15s' }}
+                  <tr key={s.staff_id} style={{ transition: 'background 0.15s' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#F9F4FF'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'; }}
                   >
@@ -180,7 +200,7 @@ export default function AdminStaffPage() {
                           <IconUser size={16} />
                         </div>
                         <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 700, color: '#3A3A3A' }}>
-                          {s.first_name} {s.last_name}
+                          {s.full_name}
                         </span>
                       </div>
                     </td>
@@ -196,7 +216,7 @@ export default function AdminStaffPage() {
                     </td>
                     {/* Toggle */}
                     <td style={{ padding: '16px 24px' }}>
-                      <button onClick={() => toggleActive(s.id, s.is_active)} style={{
+                      <button onClick={() => toggleActive(s.staff_id, s.is_active)} style={{
                         display: 'flex', alignItems: 'center', gap: 8,
                         padding: '6px 14px', borderRadius: 100, border: 'none', cursor: 'pointer',
                         background: s.is_active ? '#D4EDDA' : '#EDEDED',
