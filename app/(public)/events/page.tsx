@@ -5,6 +5,16 @@ import useSWR from 'swr';
 import { supabase } from '@/lib/supabase-client';
 import { StatusBadge } from '@/components/StatusBadge';
 
+interface Event {
+  event_id: string;
+  event_name: string;
+  event_date: string;
+  location_address: string;
+  status: string;
+  max_capacity: number | null;
+  registered_count: number;
+}
+
 const IconPaw = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M12 2C10.34 2 9 3.34 9 5s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm-5 4C5.34 6 4 7.34 4 9s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm10 0c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM5.5 14C3.57 14 2 15.57 2 17.5S3.57 21 5.5 21c.96 0 1.83-.38 2.48-1H16c.65.62 1.52 1 2.48 1C20.43 21 22 19.43 22 17.5S20.43 14 18.48 14c-1.5 0-2.78.87-3.43 2.13C14.57 16.05 13.82 16 13 16h-2c-.82 0-1.57.05-2.05.13C8.3 14.87 7.02 14 5.5 14z" />
@@ -52,9 +62,9 @@ function EventCardSkeleton() {
 
 export default function EventsPage() {
   const { data: events, isLoading, error } = useSWR('events', async () => {
-  const { data } = await supabase.from('events').select('*').eq('status', 'Open');
-  return data;
-});
+    const { data } = await supabase.from('events').select('*').eq('status', 'Open');
+    return data as Event[] | null;
+  });
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -228,7 +238,7 @@ export default function EventsPage() {
         {/* Event grid */}
         {!isLoading && !error && events && events.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-            {events.map((event: any) => {
+            {events.map((event) => {
               const remaining = event.max_capacity ? event.max_capacity - event.registered_count : null;
               const isFull = event.max_capacity && (remaining ?? 0) <= 0;
               const isOpen = event.status === 'Open';
