@@ -1,6 +1,6 @@
 // staff/procedure/[reg_pet_id]/page.tsx
 'use client';
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -19,10 +19,9 @@ const inputCls =
 export default function ProcedurePage({
   params,
 }: {
-  params: { reg_pet_id: string };
+  params: Promise<{ reg_pet_id: string }>;
 }) {
-  const { reg_pet_id } = params;
-
+  const { reg_pet_id } = use(params);
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
