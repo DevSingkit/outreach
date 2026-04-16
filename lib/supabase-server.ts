@@ -1,6 +1,6 @@
 // lib/supabase-server.ts
 // Server-only Supabase client. Never import this in 'use client' components.
-
+import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
@@ -32,7 +32,6 @@ export async function createSupabaseServerClient() {
 
 // Service role client — only for trusted server routes, never expose to browser.
 export function createSupabaseServiceClient() {
-  const { createClient } = require('@supabase/supabase-js');
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,

@@ -4,7 +4,6 @@ import useSWR from 'swr';
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-client';
-import { createBrowserClient } from '@supabase/ssr';
 
 /* ─── ICONS ─── */
 
@@ -102,29 +101,18 @@ export default function QueuePage() {
 
   /* realtime refresh */
   useEffect(() => {
-    if (!activeEvent) return;
+  if (!activeEvent) return;
 
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+  const channel = supabase
+    .channel(`event-${activeEvent.event_id}`)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'registrations' }, () => mutate())
+    .subscribe();
 
-    const channel = supabase
-      .channel(`event-${activeEvent.event_id}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'registrations' },
-        () => mutate()
-      )
-      .subscribe();
+  return () => { supabase.removeChannel(channel); };
+}, [activeEvent, mutate]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [activeEvent?.event_id]);
 
-  const checkedIn =
-    participants?.filter((p: any) => p.checkin_status === 'Checked-in') ?? [];
+    const checkedIn = participants?.filter((p: { checkin_status: string }) => p.checkin_status === 'Checked-in') ?? [];
 
   return (
     <div>
@@ -154,7 +142,7 @@ export default function QueuePage() {
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {checkedIn.map((reg: any) => (
+        {checkedIn.map((reg: { registration_id: string; checkin_status: string; queue_number?: number; registered_at: string }) => (
           <div key={reg.registration_id} style={cardStyle}>
 
             {/* HEADER */}
