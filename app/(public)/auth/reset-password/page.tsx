@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -108,7 +108,7 @@ function PasswordRequirements({ value }: { value: string }) {
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export default function ResetPasswordPage() {
+function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = true; 
@@ -483,5 +483,14 @@ export default function ResetPasswordPage() {
         input::placeholder { color: rgba(255,255,255,0.28); }
       `}</style>
     </div>
+    
   );
+  
 }
+        export default function ResetPasswordPageWrapper() {
+          return (
+            <Suspense>
+              <ResetPasswordPage />
+            </Suspense>
+          );
+        }
