@@ -79,16 +79,26 @@ function StatusBadge({ status }: { status: string }) {
 /* ─── PAGE ─── */
 
 export default function QueuePage() {
-  const { data: events } = useSWR('events', eventsApi.list);
+  const { data: events } = useSWR('events', async () => {
+  const { data } = await supabase.from('events').select('*');
+  return data;
+});
 
   const activeEvent = events?.find(
     (e) => e.status === 'Ongoing' || e.status === 'Open'
   );
 
   const { data: participants, mutate } = useSWR(
-    activeEvent ? `queue-${activeEvent.event_id}` : null,
-    () => checkinApi.eventList(activeEvent!.event_id)
-  );
+  activeEvent ? `queue-${activeEvent.event_id}` : null,
+  async () => {
+    const { data } = await supabase
+      .from('registrations')
+      .select('*, owners(*), registration_pets(*, pets(*))')
+      .eq('event_id', activeEvent!.event_id);
+    return data;
+  }
+);
+
 
   /* realtime refresh */
   useEffect(() => {
