@@ -1,7 +1,7 @@
 // app/(public)/register/confirm/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-client';
@@ -39,7 +39,7 @@ const IconQr = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export default function ConfirmPage() {
+function ConfirmPage() {
   const searchParams = useSearchParams();
   const registrationId = searchParams.get('registration_id') ?? '';
   const [state, setState] = useState<State>('loading');
@@ -284,3 +284,10 @@ export default function ConfirmPage() {
     </div>
   );
 }
+  export default function ConfirmPageWrapper() {
+    return (
+      <Suspense>
+        <ConfirmPage />
+      </Suspense>
+    );
+  }
