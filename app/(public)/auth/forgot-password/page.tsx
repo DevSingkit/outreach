@@ -201,7 +201,7 @@ export default function ForgotPasswordPage() {
                 fontSize: 14, color: 'rgba(255,255,255,0.55)',
                 lineHeight: 1.6, margin: '0 0 28px',
               }}>
-                Enter your email and we'll send you a link to reset your password.
+                Enter your email and we&apos;ll send you a link to reset your password.
               </p>
 
               <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

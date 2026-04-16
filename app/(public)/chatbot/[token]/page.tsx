@@ -48,14 +48,30 @@ export default function ChatbotPage({ params }: { params: Promise<{ token: strin
   }, [token]);
 
   const { data: session, error: sessionError } = useSWR(
-    invalid ? null : `chatbot-session-${token}`,
-    () => chatbotApi.getSession(token)
-  ) as { data: { session_id: string; expires_at: string } | undefined; error: unknown };
+  invalid ? null : `chatbot-session-${token}`,
+  async () => {
+    const { data, error } = await supabase
+      .from('chatbot_sessions')
+      .select('session_id, expires_at')
+      .eq('session_token', token)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+    if (error) throw new Error('expired');
+    return data;
+  }
+) as { data: { session_id: string; expires_at: string } | undefined; error: unknown };
 
   const { data: history } = useSWR(
-    session ? `history-${session.session_id}` : null,
-    () => chatbotApi.getHistory(session!.session_id, token)
-  ) as { data: { role: string; content: string }[] | undefined };
+  session ? `history-${session.session_id}` : null,
+  async () => {
+    const { data } = await supabase
+      .from('chat_messages')
+      .select('role, content')
+      .eq('session_id', session!.session_id)
+      .order('created_at', { ascending: true });
+    return data;
+  }
+) as { data: { role: string; content: string }[] | undefined };
 
   useEffect(() => {
     if (history && messages.length === 0) setMessages(history);
@@ -69,26 +85,33 @@ export default function ChatbotPage({ params }: { params: Promise<{ token: strin
   }, [sessionError]);
 
   const handleSend = async () => {
-    if (!input.trim() || isSending || expired) return;
-    const userMsg = input.trim().slice(0, 2000);
-    setInput('');
-    setMessages(m => [...m, { role: 'user', content: userMsg }]);
-    setIsSending(true);
-    try {
-      const res = await chatbotApi.sendMessage({ session_token: token, message: userMsg }) as { response: string };
-      setMessages(m => [...m, { role: 'assistant', content: res.response }]);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '';
-      if (msg.includes('403') || msg.toLowerCase().includes('expired')) {
-        setExpired(true);
-      } else {
-        setMessages(m => [...m, { role: 'assistant', content: 'Something went wrong. Please try again.' }]);
-      }
-    } finally {
-      setIsSending(false);
-      inputRef.current?.focus();
-    }
-  };
+  if (!input.trim() || isSending || expired || !session) return;
+  const userMsg = input.trim().slice(0, 2000);
+  setInput('');
+  setMessages(m => [...m, { role: 'user', content: userMsg }]);
+  setIsSending(true);
+  try {
+    // Save user message
+    await supabase.from('chat_messages').insert({
+      session_id: session.session_id,
+      role: 'user',
+      content: userMsg,
+    });
+    // TODO: reconnect AI response via API route later
+    const reply = 'AI response coming soon — API route not yet connected.';
+    await supabase.from('chat_messages').insert({
+      session_id: session.session_id,
+      role: 'assistant',
+      content: reply,
+    });
+    setMessages(m => [...m, { role: 'assistant', content: reply }]);
+  } catch (err: unknown) {
+    setMessages(m => [...m, { role: 'assistant', content: 'Something went wrong. Please try again.' }]);
+  } finally {
+    setIsSending(false);
+    inputRef.current?.focus();
+  }
+};
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
