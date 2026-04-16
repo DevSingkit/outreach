@@ -160,13 +160,22 @@ export default function BillingPage({ params }: { params: Promise<{ registration
   ]);
 
   // Fetch current staff for processed_by (required UUID FK)
-  const { data: me } = useSWR('auth-me', () => authApi.me());
+  const { data: me } = useSWR('auth-me', async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+});
 
   // Fetch existing billing record for this registration
   const { data: existing, mutate } = useSWR(
-    `billing-${registration_id}`,
-    () => billingApi.getByRegId(registration_id),
-    {
+      `billing-${registration_id}`,
+      async () => {
+        const { data } = await supabase
+          .from('billing_records')
+          .select('*')
+          .eq('registration_id', registration_id)
+          .maybeSingle();
+        return data;
+      },{
       // Populate local service items from existing record
       onSuccess: (data) => {
         if (data?.service_items?.length) {
@@ -205,7 +214,7 @@ export default function BillingPage({ params }: { params: Promise<{ registration
   /* ─── Submit ─── */
 
   const onSubmit = async (data: BillingFormValues) => {
-    if (!me?.userId) {
+    if (!me?.id) {
       setError('Could not resolve staff identity. Please refresh.');
       return;
     }
@@ -226,21 +235,33 @@ export default function BillingPage({ params }: { params: Promise<{ registration
 
     try {
       if (existing?.billing_id) {
-        // Record already exists — only update payment status/method
-        await billingApi.recordPayment(existing.billing_id, {
-          payment_method: data.payment_method as 'Cash' | 'GCash' | 'Other',
-          payment_status: data.payment_status as 'Paid' | 'Waived',
-        });
+        const { error } = await supabase
+          .from('billing_records')
+          .update({
+            payment_method: data.payment_method || null,
+            payment_status: data.payment_status,
+          })
+          .eq('billing_id', existing.billing_id);
+        if (error) throw new Error(error.message);
       } else {
-        // Create new billing record with all required fields
-        await billingApi.create({
-          registration_id,
-          service_items: validItems,        // required jsonb array
-          total_amount: totalAmount,        // required
-          payment_status: data.payment_status,
-          payment_method: data.payment_method || undefined,
-          processed_by: me.userId,          // required UUID FK
-        });
+        const { data: staff } = await supabase
+          .from('staff_accounts')
+          .select('staff_id')
+          .eq('supabase_uid', me.id)
+          .single();
+        if (!staff) throw new Error('Staff account not found.');
+
+        const { error } = await supabase
+          .from('billing_records')
+          .insert({
+            registration_id,
+            service_items: validItems,
+            total_amount: totalAmount,
+            payment_status: data.payment_status,
+            payment_method: data.payment_method || null,
+            processed_by: staff.staff_id,
+          });
+        if (error) throw new Error(error.message);
       }
 
       await mutate();
