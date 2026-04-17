@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-client';
 
-
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
 const IconPaw = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
@@ -33,12 +32,12 @@ const IconTrash = ({ size = 14 }: { size?: number }) => (
     <path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
   </svg>
 );
-const IconUser = ({ size = 16 }: { size?: number }) => (
+const IconUser = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
   </svg>
 );
-const IconShield = ({ size = 16 }: { size?: number }) => (
+const IconShield = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
   </svg>
@@ -53,29 +52,19 @@ const IconCheck = ({ size = 12 }: { size?: number }) => (
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
-const IconHeart = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-  </svg>
-);
 
-// ─── Zod schema ───────────────────────────────────────────────────────────────
-// FIX: field names now match DB column names exactly:
-//   pet_name        (was: name)
-//   health_notes    (was: health_notes — correct, kept)
-//   color_markings  (was: color)
-// REMOVED: is_vaccinated — no such column in public.pets
+// ─── Schema ───────────────────────────────────────────────────────────────────
 
 const petSchema = z.object({
-  pet_name:       z.string().min(1, 'Pet name is required'),   // DB: pet_name
+  pet_name:       z.string().min(1, 'Pet name is required'),
   species:        z.enum(['Dog', 'Cat', 'Other']),
   sex:            z.enum(['Male', 'Female']),
   breed:          z.string().optional(),
-  age_years:  z.coerce.number().min(0).nullish().transform(v => v ?? undefined),
-  age_months: z.coerce.number().min(0).max(11).nullish().transform(v => v ?? undefined),
-  weight_kg:  z.coerce.number().min(0).nullish().transform(v => v ?? undefined),
-  health_notes:   z.string().optional(),                       // DB: health_notes
-  color_markings: z.string().optional(),                       // DB: color_markings (was: color)
+  age_years:      z.coerce.number().min(0).nullish().transform(v => v ?? undefined),
+  age_months:     z.coerce.number().min(0).max(11).nullish().transform(v => v ?? undefined),
+  weight_kg:      z.coerce.number().min(0).nullish().transform(v => v ?? undefined),
+  health_notes:   z.string().optional(),
+  color_markings: z.string().optional(),
 });
 
 const schema = z.object({
@@ -98,11 +87,11 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-// ─── Shared input style helper ────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const baseInput = (focused: boolean, hasError: boolean): React.CSSProperties => ({
+const inputStyle = (focused: boolean, hasError: boolean): React.CSSProperties => ({
   width: '100%',
-  padding: '11px 14px',
+  padding: '12px 14px',
   background: focused ? '#FFFFFF' : '#F5F5F7',
   border: `2px solid ${hasError ? '#C0392B' : focused ? '#7B2CBF' : 'transparent'}`,
   borderRadius: 8,
@@ -114,10 +103,8 @@ const baseInput = (focused: boolean, hasError: boolean): React.CSSProperties => 
   boxSizing: 'border-box' as const,
 });
 
-// ─── Field wrapper ────────────────────────────────────────────────────────────
-
-function Field({ label, error, required, children }: {
-  label: string; error?: string; required?: boolean; children: React.ReactNode;
+function Field({ label, error, required, hint, children }: {
+  label: string; error?: string; required?: boolean; hint?: string; children: React.ReactNode;
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -125,10 +112,12 @@ function Field({ label, error, required, children }: {
         fontFamily: "'Plus Jakarta Sans', sans-serif",
         fontSize: 11, fontWeight: 700,
         color: error ? '#C0392B' : '#6B6B6B',
-        textTransform: 'uppercase', letterSpacing: '0.5px',
+        textTransform: 'uppercase', letterSpacing: '0.6px',
+        display: 'flex', alignItems: 'center', gap: 4,
       }}>
         {label}
-        {required && <span style={{ color: '#C0392B', marginLeft: 2 }}>*</span>}
+        {required && <span style={{ color: '#C0392B' }}>*</span>}
+        {hint && <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#A8A8A8', fontSize: 10 }}>({hint})</span>}
       </label>
       {children}
       {error && (
@@ -144,55 +133,44 @@ function Field({ label, error, required, children }: {
   );
 }
 
-// ─── Card ─────────────────────────────────────────────────────────────────────
-
-function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function SectionLabel({ text }: { text: string }) {
   return (
     <div style={{
-      background: '#FFFFFF',
-      borderRadius: 16,
-      padding: '28px 32px',
-      boxShadow: '0 12px 40px rgba(97,0,164,0.04)',
-      ...style,
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px',
+      color: '#7B2CBF', marginBottom: 6,
+      fontFamily: "'Plus Jakarta Sans', sans-serif",
     }}>
-      {children}
+      <IconPaw size={9} /> {text}
     </div>
   );
 }
 
-// ─── Card header ──────────────────────────────────────────────
+// ─── Step indicator ───────────────────────────────────────────────────────────
 
-function CardHeader({ icon, eyebrow, title, action }: {
-  icon: React.ReactNode; eyebrow: string; title: string; action?: React.ReactNode;
-}) {
+function StepBadge({ step, label, active }: { step: number; label: string; active?: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 12,
-          background: 'linear-gradient(135deg, #7B2CBF, #A66DD4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'white', flexShrink: 0,
-          boxShadow: '0 4px 12px rgba(123,44,191,0.25)',
-        }}>
-          {icon}
-        </div>
-        <div>
-          <div style={{
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px',
-            color: '#A8A8A8', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 2,
-          }}>
-            {eyebrow}
-          </div>
-          <h2 style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontSize: 17, fontWeight: 700, color: '#3A3A3A', margin: 0,
-          }}>
-            {title}
-          </h2>
-        </div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{
+        width: 26, height: 26, borderRadius: '50%',
+        background: active ? 'linear-gradient(135deg, #7B2CBF, #A66DD4)' : '#E8E8E8',
+        color: active ? 'white' : '#A8A8A8',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 11, fontWeight: 800,
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        flexShrink: 0,
+        boxShadow: active ? '0 2px 8px rgba(123,44,191,0.3)' : 'none',
+        transition: 'all 0.2s',
+      }}>
+        {step}
       </div>
-      {action}
+      <span style={{
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontSize: 12, fontWeight: active ? 700 : 500,
+        color: active ? '#3A3A3A' : '#A8A8A8',
+      }}>
+        {label}
+      </span>
     </div>
   );
 }
@@ -208,8 +186,10 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
 
   const { register, control, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
-    // FIX: default value key is now pet_name to match DB
-    defaultValues: { pets: [{ pet_name: '', species: 'Dog', sex: 'Male', age_years: undefined, age_months: undefined, weight_kg: undefined }], create_account: false },
+    defaultValues: {
+      pets: [{ pet_name: '', species: 'Dog', sex: 'Male', age_years: undefined, age_months: undefined, weight_kg: undefined }],
+      create_account: false,
+    },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: 'pets' });
@@ -226,19 +206,18 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
   const fp = (name: string) => ({
     onFocus: () => setFocused(name),
     onBlur: () => setFocused(null),
-    style: baseInput(focused === name, false),
+    style: inputStyle(focused === name, false),
   });
   const fpe = (name: string, err: boolean) => ({
     onFocus: () => setFocused(name),
     onBlur: () => setFocused(null),
-    style: baseInput(focused === name, err),
+    style: inputStyle(focused === name, err),
   });
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     setServerError('');
     try {
-      // 1. Upsert owner by email
       const { data: owner, error: ownerError } = await supabase
         .from('owners')
         .upsert({
@@ -252,7 +231,6 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
         .single();
       if (ownerError) throw new Error(ownerError.message);
 
-      // 2. Check for duplicate registration
       const { data: existing } = await supabase
         .from('registrations')
         .select('registration_id')
@@ -261,33 +239,24 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
         .maybeSingle();
       if (existing) throw new Error('already registered');
 
-      // 3. Check event capacity
       const { data: event, error: eventError } = await supabase
         .from('events')
-        .select('max_pets, registered_pets_count')
+        .select('max_capacity, registered_count')
         .eq('event_id', event_id)
         .single();
       if (eventError) throw new Error(eventError.message);
-      if (event.max_pets !== null && event.registered_pets_count + data.pets.length > event.max_pets) {
+      if (event.max_capacity !== null && event.registered_count >= event.max_capacity) {
         throw new Error('capacity');
       }
 
-      // 4. Create registration
       const qr_code_data = `NHVC-${event_id}-${owner.owner_id}-${Date.now()}`;
       const { data: registration, error: regError } = await supabase
         .from('registrations')
-        .insert({
-          event_id,
-          owner_id: owner.owner_id,
-          qr_code_data,
-          registration_type: 'Pre-registered',
-          checkin_status: 'Not checked in',
-        })
+        .insert({ event_id, owner_id: owner.owner_id, qr_code_data, registration_type: 'Pre-registered' })
         .select()
         .single();
       if (regError) throw new Error(regError.message);
 
-      // 5. Insert pets and link to registration
       for (const pet of data.pets) {
         const { data: insertedPet, error: petError } = await supabase
           .from('pets')
@@ -309,23 +278,16 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
 
         const { error: linkError } = await supabase
           .from('registration_pets')
-          .insert({
-            registration_id: registration.registration_id,
-            pet_id: insertedPet.pet_id,
-          });
+          .insert({ registration_id: registration.registration_id, pet_id: insertedPet.pet_id });
         if (linkError) throw new Error(linkError.message);
       }
 
-      // 6. Optionally create Supabase auth account
       if (data.create_account && data.password) {
         await supabase.auth.signUp({
           email: data.email,
           password: data.password,
-          options: {
-            data: { role: 'Owner', owner_id: owner.owner_id },
-          },
+          options: { data: { role: 'Owner', owner_id: owner.owner_id } },
         });
-        // Don't throw on auth error — registration already succeeded
       }
 
       sessionStorage.setItem('nhvc_reg', JSON.stringify({
@@ -380,6 +342,7 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: 13, fontWeight: 600, color: '#6B6B6B',
           textDecoration: 'none', padding: '7px 14px', borderRadius: 8,
+          background: '#F5F5F7', transition: 'all 0.18s',
         }}>
           <IconArrowLeft size={14} /> Back to Events
         </Link>
@@ -395,91 +358,185 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
           backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
           backgroundSize: '32px 32px', pointerEvents: 'none',
         }} />
-        <div style={{ position: 'absolute', top: 20, right: 60, opacity: 0.05, color: 'white', transform: 'rotate(20deg)' }}>
-          <IconPaw size={140} />
+        <div style={{ position: 'absolute', top: 16, right: 40, opacity: 0.05, color: 'white', transform: 'rotate(20deg)' }}>
+          <IconPaw size={160} />
         </div>
-        <div style={{ maxWidth: 720, margin: '0 auto', padding: '52px 24px 56px', position: 'relative', zIndex: 1 }}>
+
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 0', position: 'relative', zIndex: 1 }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             background: 'rgba(255,255,255,0.08)',
             border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: 100, padding: '4px 12px',
-            fontSize: 10, fontWeight: 600,
+            borderRadius: 100, padding: '4px 14px',
+            fontSize: 10, fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: '1.5px',
-            color: '#A66DD4', marginBottom: 14,
+            color: '#C4A0E8', marginBottom: 16,
             fontFamily: "'Plus Jakarta Sans', sans-serif",
           }}>
             <IconPaw size={9} /> Outreach Registration
           </div>
+
           <h1 style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 'clamp(1.8rem, 4vw, 2.4rem)', fontWeight: 800,
-            color: '#FFFFFF', margin: '0 0 12px', lineHeight: 1.15,
+            color: '#FFFFFF', margin: '0 0 10px', lineHeight: 1.15,
           }}>
             Register for the Event
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, margin: 0, maxWidth: 480, lineHeight: 1.7 }}>
-            Fill in your details and your pet&apos;s information below. You&apos;ll receive a QR code upon successful registration.
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: '0 0 36px', maxWidth: 460, lineHeight: 1.7 }}>
+            Fill in your details and your pet&apos;s information. You&apos;ll receive a QR code via email upon successful registration.
           </p>
+
+          {/* Step progress pills — inside hero, bottom */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(255,255,255,0.07)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 14, padding: '14px 20px',
+            flexWrap: 'wrap', rowGap: 10,
+          }}>
+            <StepBadge step={1} label="Owner Info" active />
+            <div style={{ width: 24, height: 1, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+            <StepBadge step={2} label="Pet Details" active />
+            <div style={{ width: 24, height: 1, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+            <StepBadge step={3} label="Account (optional)" />
+          </div>
         </div>
+
+        {/* Curved bottom */}
+        <div style={{
+          height: 40, marginTop: 32,
+          background: '#EDEDED',
+          borderRadius: '24px 24px 0 0',
+        }} />
       </div>
 
       {/* ── Form ── */}
-      <main style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 80px' }}>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <main style={{ maxWidth: 720, margin: '-8px auto 0', padding: '0 24px 80px' }}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* ── Owner card ── */}
-          <Card>
-            <CardHeader icon={<IconUser size={18} />} eyebrow="Step 1" title="Owner Information" />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: 20,
+            padding: '28px 28px 32px',
+            boxShadow: '0 12px 40px rgba(97,0,164,0.04)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 13,
+                background: 'linear-gradient(135deg, #7B2CBF, #A66DD4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', flexShrink: 0,
+                boxShadow: '0 4px 14px rgba(123,44,191,0.28)',
+              }}>
+                <IconUser size={20} />
+              </div>
+              <div>
+                <SectionLabel text="Step 1" />
+                <h2 style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 17, fontWeight: 800, color: '#3A3A3A', margin: 0,
+                }}>
+                  Owner Information
+                </h2>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <Field label="First Name" error={errors.first_name?.message} required>
                 <input placeholder="Juan" {...register('first_name')} {...fpe('first_name', !!errors.first_name)} />
               </Field>
               <Field label="Last Name" error={errors.last_name?.message} required>
                 <input placeholder="dela Cruz" {...register('last_name')} {...fpe('last_name', !!errors.last_name)} />
               </Field>
-              <Field label="Email Address" error={errors.email?.message} required>
+              <Field label="Email" error={errors.email?.message} required>
                 <input type="email" placeholder="you@example.com" {...register('email')} {...fpe('email', !!errors.email)} />
               </Field>
-              <Field label="Contact Number">
+              <Field label="Contact Number" hint="optional">
                 <input placeholder="+63 9XX XXX XXXX" {...register('contact_number')} {...fp('contact_number')} />
               </Field>
             </div>
-            <div style={{ marginTop: 16 }}>
-              <Field label="Address">
+            <div style={{ marginTop: 14 }}>
+              <Field label="Home Address" hint="optional">
                 <input placeholder="Barangay, City" {...register('address')} {...fp('address')} />
               </Field>
             </div>
-          </Card>
+          </div>
+
+          {/* ── Divider label ── */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12, padding: '4px 0',
+          }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(123,44,191,0.08)' }} />
+            <span style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 11, fontWeight: 700, color: '#A8A8A8',
+              textTransform: 'uppercase', letterSpacing: '1px',
+            }}>
+              Pet Details
+            </span>
+            <div style={{ flex: 1, height: 1, background: 'rgba(123,44,191,0.08)' }} />
+          </div>
 
           {/* ── Pet cards ── */}
           {fields.map((field, idx) => (
-            <Card key={field.id}>
-              <CardHeader
-                icon={<IconPaw size={18} />}
-                eyebrow={`Pet ${idx + 1} of ${fields.length}`}
-                title="Pet Information"
-                action={fields.length > 1 ? (
+            <div key={field.id} style={{
+              background: '#FFFFFF',
+              borderRadius: 20,
+              padding: '28px 28px 32px',
+              boxShadow: '0 12px 40px rgba(97,0,164,0.04)',
+              position: 'relative',
+            }}>
+              {/* Top accent bar */}
+              <div style={{
+                position: 'absolute', top: 0, left: 28, right: 28, height: 3,
+                background: 'linear-gradient(90deg, #7B2CBF, #A66DD4)',
+                borderRadius: '0 0 4px 4px',
+              }} />
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 13,
+                    background: 'linear-gradient(135deg, #7B2CBF, #A66DD4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', flexShrink: 0,
+                    boxShadow: '0 4px 14px rgba(123,44,191,0.28)',
+                  }}>
+                    <IconPaw size={20} />
+                  </div>
+                  <div>
+                    <SectionLabel text={`Pet ${idx + 1} of ${fields.length}`} />
+                    <h2 style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: 17, fontWeight: 800, color: '#3A3A3A', margin: 0,
+                    }}>
+                      Pet Information
+                    </h2>
+                  </div>
+                </div>
+
+                {fields.length > 1 && (
                   <button
                     type="button"
                     onClick={() => remove(idx)}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: 6,
-                      padding: '7px 14px',
+                      padding: '7px 13px',
                       background: '#FEF2F2', color: '#C0392B',
                       border: 'none', borderRadius: 8,
                       fontSize: 12, fontWeight: 600, cursor: 'pointer',
                       fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      flexShrink: 0,
                     }}
                   >
                     <IconTrash size={13} /> Remove
                   </button>
-                ) : undefined}
-              />
+                )}
+              </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
-                {/* FIX: field key is pet_name (DB column), not name */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <Field label="Pet Name" error={errors.pets?.[idx]?.pet_name?.message} required>
                   <input
                     placeholder="Bantay"
@@ -493,11 +550,10 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
                     {...register(`pets.${idx}.species`)}
                     onFocus={() => setFocused(`pets.${idx}.species`)}
                     onBlur={() => setFocused(null)}
-                    style={baseInput(focused === `pets.${idx}.species`, !!errors.pets?.[idx]?.species)}
+                    style={inputStyle(focused === `pets.${idx}.species`, !!errors.pets?.[idx]?.species)}
                   >
                     <option value="Dog">🐶 Dog</option>
                     <option value="Cat">🐱 Cat</option>
-                    <option value="Other">🐾 Other</option>
                   </select>
                 </Field>
 
@@ -506,60 +562,56 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
                     {...register(`pets.${idx}.sex`)}
                     onFocus={() => setFocused(`pets.${idx}.sex`)}
                     onBlur={() => setFocused(null)}
-                    style={baseInput(focused === `pets.${idx}.sex`, !!errors.pets?.[idx]?.sex)}
+                    style={inputStyle(focused === `pets.${idx}.sex`, !!errors.pets?.[idx]?.sex)}
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
                 </Field>
 
-                <Field label="Breed">
-                  <input placeholder="Aspin, Persian, etc." {...register(`pets.${idx}.breed`)} {...fp(`pets.${idx}.breed`)} />
+                <Field label="Breed" hint="optional">
+                  <input placeholder="Aspin, Persian…" {...register(`pets.${idx}.breed`)} {...fp(`pets.${idx}.breed`)} />
                 </Field>
 
-                <Field label="Age — Years">
+                <Field label="Age — Years" hint="optional">
                   <input type="number" min="0" placeholder="0" {...register(`pets.${idx}.age_years`)} {...fp(`pets.${idx}.age_years`)} />
                 </Field>
 
-                <Field label="Age — Months">
-                  <input type="number" min="0" max="11" placeholder="0–11" {...register(`pets.${idx}.age_months`)} {...fp(`pets.${idx}.age_months`)} />
+                <Field label="Age — Months" hint="0–11">
+                  <input type="number" min="0" max="11" placeholder="0" {...register(`pets.${idx}.age_months`)} {...fp(`pets.${idx}.age_months`)} />
                 </Field>
 
-                <Field label="Weight (kg)">
+                <Field label="Weight (kg)" hint="optional">
                   <input type="number" min="0" step="0.1" placeholder="5.5" {...register(`pets.${idx}.weight_kg`)} {...fp(`pets.${idx}.weight_kg`)} />
                 </Field>
 
-                {/* FIX: field key is color_markings (DB column), was: color */}
-                <Field label="Color / Markings">
+                <Field label="Color / Markings" hint="optional">
                   <input
                     placeholder="Brown with white spots"
                     {...register(`pets.${idx}.color_markings`)}
                     {...fp(`pets.${idx}.color_markings`)}
                   />
                 </Field>
-
               </div>
 
-              <div style={{ marginTop: 16 }}>
-                {/* health_notes is already the correct DB column name */}
-                <Field label="Health Notes">
+              <div style={{ marginTop: 14 }}>
+                <Field label="Health Notes" hint="conditions, allergies, medications">
                   <textarea
                     rows={2}
-                    placeholder="Any known conditions, allergies, or current medications…"
+                    placeholder="e.g. currently on antibiotics, history of skin allergy…"
                     {...register(`pets.${idx}.health_notes`)}
                     onFocus={() => setFocused(`pets.${idx}.health_notes`)}
                     onBlur={() => setFocused(null)}
-                    style={{ ...baseInput(focused === `pets.${idx}.health_notes`, false), resize: 'vertical' }}
+                    style={{ ...inputStyle(focused === `pets.${idx}.health_notes`, false), resize: 'vertical' }}
                   />
                 </Field>
               </div>
-            </Card>
+            </div>
           ))}
 
-          {/* Add another pet */}
+          {/* ── Add pet button ── */}
           <button
             type="button"
-            // FIX: default value key is pet_name
             onClick={() => append({ pet_name: '', species: 'Dog', sex: 'Male', age_years: undefined, age_months: undefined, weight_kg: undefined })}
             style={{
               width: '100%',
@@ -592,14 +644,38 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
           </button>
 
           {/* ── Account card ── */}
-          <Card>
-            <CardHeader icon={<IconShield size={18} />} eyebrow="Optional" title="Create an Account" />
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: 20,
+            padding: '28px 28px 32px',
+            boxShadow: '0 12px 40px rgba(97,0,164,0.04)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 13,
+                background: 'linear-gradient(135deg, #7B2CBF, #A66DD4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', flexShrink: 0,
+                boxShadow: '0 4px 14px rgba(123,44,191,0.28)',
+              }}>
+                <IconShield size={20} />
+              </div>
+              <div>
+                <SectionLabel text="Optional" />
+                <h2 style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 17, fontWeight: 800, color: '#3A3A3A', margin: 0,
+                }}>
+                  Create an Account
+                </h2>
+              </div>
+            </div>
 
             <label style={{
               display: 'flex', alignItems: 'flex-start', gap: 14, cursor: 'pointer',
-              padding: 16, borderRadius: 12,
+              padding: '16px 18px', borderRadius: 12,
               background: createAccount ? '#F9F5FF' : '#FAFAFA',
-              border: `1px solid ${createAccount ? 'rgba(123,44,191,0.15)' : 'rgba(0,0,0,0.05)'}`,
+              border: `1.5px solid ${createAccount ? 'rgba(123,44,191,0.2)' : 'rgba(0,0,0,0.05)'}`,
               transition: 'all 0.2s',
             }}>
               <div style={{ position: 'relative', marginTop: 2, flexShrink: 0 }}>
@@ -622,14 +698,14 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
                 <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 700, color: '#3A3A3A', margin: '0 0 4px' }}>
                   Save my details for easy access
                 </p>
-                <p style={{ fontSize: 13, color: '#6B6B6B', margin: 0, lineHeight: 1.5 }}>
-                  Track registrations, view your QR code anytime, and access the post-op care chatbot.
+                <p style={{ fontSize: 13, color: '#6B6B6B', margin: 0, lineHeight: 1.55 }}>
+                  Track registrations, view your QR code anytime, and access the post-op care chatbot from your dashboard.
                 </p>
               </div>
             </label>
 
             {createAccount && (
-              <div style={{ marginTop: 20 }}>
+              <div style={{ marginTop: 18 }}>
                 <Field label="Password" error={errors.password?.message} required>
                   <input
                     type="password"
@@ -640,11 +716,11 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
                 </Field>
 
                 {password.length > 0 && (
-                  <div style={{ marginTop: 10 }}>
-                    <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
                       {[1, 2, 3].map(i => (
                         <div key={i} style={{
-                          flex: 1, height: 3, borderRadius: 100,
+                          flex: 1, height: 4, borderRadius: 100,
                           background: i <= pwScore
                             ? pwScore === 1 ? '#C0392B' : pwScore === 2 ? '#F59E0B' : '#5BB832'
                             : '#EDEDED',
@@ -652,20 +728,20 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
                         }} />
                       ))}
                     </div>
-                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
                       {[
-                        { check: pwChecks.length, label: '10+ chars' },
-                        { check: pwChecks.upper, label: '1 uppercase' },
+                        { check: pwChecks.length, label: '10+ characters' },
+                        { check: pwChecks.upper, label: '1 uppercase letter' },
                         { check: pwChecks.number, label: '1 number' },
                       ].map(({ check, label }) => (
                         <span key={label} style={{
-                          display: 'flex', alignItems: 'center', gap: 4,
+                          display: 'flex', alignItems: 'center', gap: 5,
                           fontSize: 11, fontFamily: "'Be Vietnam Pro', sans-serif",
                           color: check ? '#5BB832' : '#A8A8A8',
                           transition: 'color 0.2s',
                         }}>
                           <div style={{
-                            width: 14, height: 14, borderRadius: '50%',
+                            width: 15, height: 15, borderRadius: '50%',
                             background: check ? '#E8F8E0' : '#EDEDED',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: check ? '#5BB832' : '#C0C0C0',
@@ -681,9 +757,9 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
                 )}
               </div>
             )}
-          </Card>
+          </div>
 
-          {/* Server error */}
+          {/* ── Server error ── */}
           {serverError && (
             <div style={{
               display: 'flex', alignItems: 'flex-start', gap: 12,
@@ -691,31 +767,44 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
               background: '#FEF2F2', borderRadius: 12,
               borderLeft: '4px solid #C0392B',
             }}>
-              <IconAlertCircle size={18} />
+              <div style={{ color: '#C0392B', flexShrink: 0, marginTop: 1 }}>
+                <IconAlertCircle size={16} />
+              </div>
               <span style={{ fontSize: 14, color: '#C0392B', fontFamily: "'Be Vietnam Pro', sans-serif", lineHeight: 1.5 }}>
                 {serverError}
               </span>
             </div>
           )}
 
-          {/* Submit */}
+          {/* ── Submit ── */}
           <button
             type="submit"
             disabled={isSubmitting}
             style={{
               width: '100%',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              padding: '17px 28px',
+              padding: '18px 28px',
               background: isSubmitting
                 ? 'rgba(123,44,191,0.45)'
                 : 'linear-gradient(135deg, #7B2CBF, #A66DD4)',
               color: 'white',
-              border: 'none', borderRadius: 12,
-              fontSize: 15, fontWeight: 700,
+              border: 'none', borderRadius: 14,
+              fontSize: 15, fontWeight: 800,
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
-              boxShadow: isSubmitting ? 'none' : '0 6px 24px rgba(123,44,191,0.25)',
+              boxShadow: isSubmitting ? 'none' : '0 6px 24px rgba(123,44,191,0.28)',
+              letterSpacing: '0.2px',
+            }}
+            onMouseEnter={e => {
+              if (!isSubmitting) {
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 10px 30px rgba(123,44,191,0.35)';
+              }
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'none';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 24px rgba(123,44,191,0.28)';
             }}
           >
             {isSubmitting ? (
@@ -727,18 +816,17 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
                   borderRadius: '50%', display: 'inline-block',
                   animation: 'spin 0.7s linear infinite',
                 }} />
-                Submitting…
+                Submitting Registration…
               </>
             ) : (
-              <>
-                <IconHeart size={16} /> Submit Registration
-              </>
+              'Submit Registration'
             )}
           </button>
 
           <p style={{
             textAlign: 'center', fontSize: 11, color: '#A8A8A8',
-            fontFamily: "'Be Vietnam Pro', sans-serif", margin: '-8px 0 0',
+            fontFamily: "'Be Vietnam Pro', sans-serif", margin: '-4px 0 0',
+            lineHeight: 1.6,
           }}>
             Northern Hills Veterinary Clinic · Adeline Arcade, Caloocan City
           </p>
@@ -747,7 +835,7 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 580px) {
+        @media (max-width: 560px) {
           form > div > div[style*="grid-template-columns: 1fr 1fr"] {
             grid-template-columns: 1fr !important;
           }

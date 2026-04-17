@@ -72,6 +72,10 @@ export default function AdminEventDetailPage({ params }: { params: Promise<{ id:
   const { register, handleSubmit } = useForm();
 
   const onSubmit = async (data: Record<string, unknown>) => {
+  setIsSaving(true);
+  setError('');
+  setSaved(false);
+  try {
     const { error: updateError } = await supabase
       .from('events')
       .update({
@@ -79,20 +83,26 @@ export default function AdminEventDetailPage({ params }: { params: Promise<{ id:
         event_date: data.event_date,
         location_address: data.location_address,
         max_capacity: data.max_capacity ? Number(data.max_capacity) : null,
-        description: data.description ?? null,
       })
       .eq('event_id', id);
     if (updateError) throw new Error(updateError.message);
     await mutate();
+    setSaved(true);
+  } catch (err: unknown) {
+    setError(err instanceof Error ? err.message : 'Something went wrong.');
+  } finally {
+    setIsSaving(false);
+  }
+};  // ← this was missing
 
-  const handleStatusChange = async (status: string) => {
-    const { error: statusError } = await supabase
-      .from('events')
-      .update({ status })
-      .eq('event_id', id);
-    if (statusError) throw new Error(statusError.message);
-    await mutate();
-  };
+const handleStatusChange = async (status: string) => {
+  const { error: statusError } = await supabase
+    .from('events')
+    .update({ status })
+    .eq('event_id', id);
+  if (statusError) throw new Error(statusError.message);
+  await mutate();
+};
 
   if (isLoading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 320 }}>
@@ -206,10 +216,6 @@ export default function AdminEventDetailPage({ params }: { params: Promise<{ id:
               <FocusInput type="number" min="1" defaultValue={event.max_capacity} {...register('max_capacity')} />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#A8A8A8', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Description</label>
-              <FocusInput as="textarea" rows={4} style={{ resize: 'none' }} defaultValue={event.description ?? ''} {...register('description')} />
-            </div>
 
             {error && (
               <div style={{ background: '#FFF0EE', borderLeft: '4px solid #C0392B', borderRadius: 8, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, color: '#C0392B', fontSize: 13, fontFamily: "'Be Vietnam Pro', sans-serif" }}>
@@ -240,4 +246,4 @@ export default function AdminEventDetailPage({ params }: { params: Promise<{ id:
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
-}}
+}

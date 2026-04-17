@@ -1,6 +1,6 @@
 // staff/checkin/page.tsx
 'use client';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import  useSWR  from 'swr';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -193,8 +193,9 @@ export default function CheckinPage() {
   });
   const { fields, append, remove } = useFieldArray({ control, name: 'pets' });
  
-  const handleScan = async (token: string) => {
-  if (!activeEvent) return;
+  const handleScan = useCallback(async (token: string) => {
+  if (!activeEvent || !token || token === scanResult) return;
+  setScanResult(token);
   try {
     const { data: reg, error } = await supabase
       .from('registrations')
@@ -203,11 +204,15 @@ export default function CheckinPage() {
       .eq('event_id', activeEvent.event_id)
       .single();
     if (error || !reg) throw new Error('Registration not found');
-    await supabase.from('registrations').update({ checkin_status: 'Checked-in' }).eq('registration_id', reg.registration_id);
-    setScanResult(token);
+    await supabase
+      .from('registrations')
+      .update({ checkin_status: 'Checked-in' })
+      .eq('registration_id', reg.registration_id);
     showToast(`Queue #${reg.queue_number} — Checked in!`, 'success');
-  } catch (err: unknown) { showToast(err instanceof Error ? err.message : 'Scan failed', 'error'); }
-};
+  } catch (err: unknown) {
+    showToast(err instanceof Error ? err.message : 'Scan failed', 'error');
+  }
+}, [activeEvent, scanResult]);
  
   const onWalkinSubmit = async (data: WalkinForm) => {
     if (!activeEvent) return;

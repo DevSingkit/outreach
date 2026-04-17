@@ -68,7 +68,6 @@ const eventSchema = z.object({
   event_time:       z.string().optional(),
   location_address: z.string().min(1, 'Location is required'),
   max_capacity:     z.coerce.number().int().min(1, 'Capacity must be at least 1'),
-  description:      z.string().optional(),
 });
 type EventForm = z.infer<typeof eventSchema>;
 
@@ -111,28 +110,38 @@ export default function AdminEventsPage() {
   });
 
   const onSubmit = async (data: EventForm) => {
-    setIsSubmitting(true);
-    setError('');
-    try {
-      const { error: createError } = await supabase.from('events').insert({
-        event_name: data.event_name,
-        event_date: data.event_date,
-        event_time: data.event_time ?? null,
-        location_address: data.location_address,
-        max_capacity: data.max_capacity,
-        description: data.description ?? null,
-        status: 'Draft',
-      });
-      if (createError) throw new Error(createError.message);
-      mutate();
-      reset();
-      setShowModal(false);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  setIsSubmitting(true);
+  setError('');
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated.');
+
+    const { data: staff, error: staffError } = await supabase
+      .from('staff_accounts')
+      .select('staff_id')
+      .eq('supabase_uid', session.user.id)
+      .single();
+    if (staffError || !staff) throw new Error('Staff account not found.');
+
+    const { error: createError } = await supabase.from('events').insert({
+      event_name: data.event_name,
+      event_date: data.event_date,
+      event_time: data.event_time ?? null,
+      location_address: data.location_address,
+      max_capacity: data.max_capacity,
+      status: 'Draft',
+      created_by: staff.staff_id,
+    });
+    if (createError) throw new Error(createError.message);
+    mutate();
+    reset();
+    setShowModal(false);
+  } catch (err: unknown) {
+    setError(err instanceof Error ? err.message : 'Something went wrong.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleStatusChange = async (id: string, status: string) => {
     const { error: statusError } = await supabase
@@ -304,11 +313,6 @@ export default function AdminEventsPage() {
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#A8A8A8', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Max Capacity *</label>
                 <FocusInput type="number" min="1" placeholder="100" {...register('max_capacity')} />
                 {errors.max_capacity && <p style={{ color: '#C0392B', fontSize: 12, marginTop: 4, fontFamily: "'Be Vietnam Pro', sans-serif" }}>{errors.max_capacity.message}</p>}
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#A8A8A8', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Description</label>
-                <FocusInput as="textarea" rows={3} style={{ resize: 'none' }} {...register('description')} />
               </div>
 
               {error && (

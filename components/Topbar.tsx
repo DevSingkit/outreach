@@ -1,4 +1,3 @@
-// components/Topbar.tsx
 'use client';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
@@ -27,19 +26,28 @@ export function Topbar({ title, user }: TopbarProps) {
   }
 
   return (
-    <header className="h-[64px] bg-surface border-b border-muted/20 flex items-center justify-between px-6 sticky top-0 z-20">
-      <h1 className="font-jakarta font-semibold text-text text-lg pl-10 md:pl-0">{title}</h1>
+    <header className="h-[64px] bg-[var(--surface)] border-b border-[var(--border-soft)] flex items-center justify-between px-6 sticky top-0 z-20 backdrop-blur-sm">
+      <h1 className="font-[family-name:var(--font-display)] font-semibold text-[var(--ink)] text-lg pl-10 md:pl-0 tracking-tight">
+        {title}
+      </h1>
+
       <div className="flex items-center gap-3">
         <div className="hidden sm:flex flex-col items-end">
-          <span className="font-dm text-sm font-medium text-text leading-tight">{user.full_name}</span>
-          <span className="text-xs text-muted font-dm">{user.role}</span>
+          <span className="font-[family-name:var(--font-body)] text-sm font-medium text-[var(--ink)] leading-tight">
+            {user.full_name}
+          </span>
+          <span className="text-xs text-[var(--ink-3)] font-[family-name:var(--font-body)]">
+            {user.role}
+          </span>
         </div>
-        <span className="bg-primary/10 text-primary text-xs font-semibold font-dm px-3 py-1 rounded-full">
+
+        <span className="bg-[var(--p-tint)] text-[var(--p)] text-xs font-semibold font-[family-name:var(--font-body)] px-3 py-1 rounded-full border border-[var(--p)]/20">
           {user.role}
         </span>
+
         <button
           onClick={handleLogout}
-          className="text-sm font-dm font-medium text-muted hover:text-error transition-colors px-2 py-1"
+          className="text-[var(--ink-3)] hover:text-red-500 transition-colors px-2 py-1 rounded-md hover:bg-red-50/50"
           aria-label="Logout"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

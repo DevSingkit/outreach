@@ -1,6 +1,4 @@
-// components/QRScanner.tsx
 'use client';
-
 import { useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
@@ -11,12 +9,9 @@ interface QRScannerProps {
 
 export function QRScanner({ onScan, onError }: QRScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const startedRef = useRef(false);
+  const isRunningRef = useRef(false);
 
   useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-
     const scanner = new Html5Qrcode('qr-reader');
     scannerRef.current = scanner;
 
@@ -27,22 +22,21 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
         onScan,
         onError,
       )
-      .catch(() => {
-        // Camera permission denied or not available
-      });
+      .then(() => { isRunningRef.current = true; })
+      .catch(() => {});
 
     return () => {
-      scanner.stop().catch(() => {});
+      if (isRunningRef.current) {
+        scanner.stop().catch(() => {});
+        isRunningRef.current = false;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="w-full">
-      <div
-        id="qr-reader"
-        className="w-full rounded-card overflow-hidden"
-      />
+      <div id="qr-reader" className="w-full rounded-card overflow-hidden" />
       <p className="text-xs text-muted font-dm text-center mt-2">
         Point camera at the owner&rsquo;s QR code
       </p>
