@@ -106,7 +106,7 @@ export default function OwnerDashboardPage() {
           <IconPaw size={12} color={colors.primary} /> Pet Owner Portal
         </div>
         <h1 style={{ fontFamily: fonts.jakarta, fontSize: 26, fontWeight: 800, color: colors.text, margin: 0 }}>Dashboard</h1>
-        <p style={{ fontFamily: fonts.vietnam, fontSize: 14, color: colors.textSoft, marginTop: 6 }}>Welcome back. Here's a summary of your activity.</p>
+        <p style={{ fontFamily: fonts.vietnam, fontSize: 14, color: colors.textSoft, marginTop: 6 }}>Welcome back. Here&apos;s a summary of your activity.</p>
       </div>
 
       {/* Stat Cards */}
