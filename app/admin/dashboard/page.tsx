@@ -49,6 +49,8 @@ const statusMap: Record<string, { bg: string; color: string }> = {
   Open:    { bg: '#D4EDDA', color: '#155724' },
   Ongoing: { bg: '#D1ECF1', color: '#0C5460' },
   Closed:  { bg: '#F8D7DA', color: '#721C24' },
+  Completed: { bg: '#fbfcd9', color: '#686215' },
+
 };
 function StatusBadge({ status }: { status: string }) {
   const s = statusMap[status] ?? { bg: '#E2E3E5', color: '#383D41' };
@@ -70,6 +72,7 @@ function StatCard({ label, value, icon, accent, isLoading }: { label: string; va
       background: '#FFFFFF', borderRadius: 24, padding: 28,
       boxShadow: '0 12px 40px rgba(97,0,164,0.04)',
       display: 'flex', alignItems: 'center', gap: 20,
+      borderLeft: `4px solid ${accent}`,
       transition: 'all 0.25s',
     }}
       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 16px 40px rgba(123,44,191,0.08)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; }}
@@ -106,6 +109,7 @@ export default function AdminDashboardPage() {
   const total   = events?.length ?? 0;
   const open    = events?.filter((e: { status: string }) => e.status === 'Open').length ?? 0;
   const ongoing = events?.filter((e: { status: string }) => e.status === 'Ongoing').length ?? 0;
+  const closed = events?.filter((e: { status: string }) => e.status === 'Closed').length ?? 0;
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
@@ -140,10 +144,11 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 32 }} className="stats-grid">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
         <StatCard label="Total Events"   value={total}   icon={<IconCalendar size={24} />} accent="#7B2CBF" isLoading={isLoading} />
         <StatCard label="Open Events"    value={open}    icon={<IconUsers size={24} />}    accent="#7ED957" isLoading={isLoading} />
         <StatCard label="Ongoing Events" value={ongoing} icon={<IconBarChart size={24} />} accent="#7B2CBF" isLoading={isLoading} />
+        <StatCard label="Completed Events" value={closed} icon={<IconPlus size={24} />} accent="#7B2CBF" isLoading={isLoading} />
       </div>
 
       {/* Event list card */}

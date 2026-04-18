@@ -215,29 +215,42 @@ export default function RegisterPage({ params }: { params: Promise<{ event_id: s
   });
 
   const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true);
-    setServerError('');
-    try {
-      const { data: owner, error: ownerError } = await supabase
-        .from('owners')
-        .upsert({
-          first_name: data.first_name,
-          last_name: data.last_name,
-          email: data.email,
-          contact_number: data.contact_number ?? null,
-          address: data.address ?? null,
-        }, { onConflict: 'email' })
-        .select()
-        .single();
-      if (ownerError) throw new Error(ownerError.message);
+  setIsSubmitting(true);
+  setServerError('');
+  try {
+    let supabaseUid: string | null = null;
 
-      const { data: existing } = await supabase
-        .from('registrations')
-        .select('registration_id')
-        .eq('event_id', event_id)
-        .eq('owner_id', owner.owner_id)
-        .maybeSingle();
-      if (existing) throw new Error('already registered');
+    if (data.create_account && data.password) {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: { data: { role: 'Owner' } }, // owner_id not known yet
+      });
+      if (authError) throw new Error(authError.message);
+      supabaseUid = authData.user?.id ?? null;
+    }
+
+    const { data: owner, error: ownerError } = await supabase
+      .from('owners')
+      .upsert({
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        contact_number: data.contact_number ?? null,
+        address: data.address ?? null,
+        ...(supabaseUid ? { supabase_uid: supabaseUid } : {}),
+      }, { onConflict: 'email' })
+      .select()
+      .single();
+    if (ownerError) throw new Error(ownerError.message);
+
+    const { data: existing } = await supabase
+      .from('registrations')
+      .select('registration_id')
+      .eq('event_id', event_id)
+      .eq('owner_id', owner.owner_id)
+      .maybeSingle();
+    if (existing) throw new Error('already registered');
 
       const { data: event, error: eventError } = await supabase
         .from('events')

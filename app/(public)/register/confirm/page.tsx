@@ -372,14 +372,13 @@ function ConfirmPage() {
             background: '#FAFAFA',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
-            <Link href="/events" style={{
+            <Link href="/" style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               color: '#7B2CBF',
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontSize: 13, fontWeight: 600, textDecoration: 'none',
             }}>
-              <IconCalendar size={14} />
-              Browse Other Events
+              Go back to Homepage
               <IconArrowRight size={13} />
             </Link>
           </div>
@@ -392,7 +391,8 @@ function ConfirmPage() {
           margin: '24px 0 0', lineHeight: 1.7,
         }}>
           Northern Hills Veterinary Clinic<br />
-          Adeline Arcade, Unit 12, Quirino Highway · Caloocan City
+          Adeline Arcade, Unit 12, Quirino Highway<br />
+          Caloocan City
         </p>
       </main>
 

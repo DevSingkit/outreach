@@ -52,14 +52,14 @@ export default function OwnerRegistrationDetailPage({ params }: { params: Promis
         <Link href="/owner/registrations" className="text-muted hover:text-primary transition">
           <ArrowLeft size={20} />
         </Link>
-        <h1 className="font-jakarta text-xl font-bold text-text">{reg.event?.name ?? 'Registration Detail'}</h1>
+        <h1 className="font-jakarta text-xl font-bold text-text">{reg.events?.event_name ?? 'Registration Detail'}</h1>
       </div>
 
       {/* Timeline */}
       <div className="bg-surface rounded-card p-6 shadow-sm">
         <h2 className="font-jakarta font-semibold text-text mb-5">Progress</h2>
         <ParticipantTimeline
-          registeredAt={reg.created_at}
+          registeredAt={reg.registered_at}
           checkinTimestamp={reg.checkin_timestamp}
           procedureDone={reg.registration_pets?.every((rp: RegistrationPet) => rp.procedure_status === 'Done')}
           paymentSettled={reg.billing_record?.payment_status === 'Paid'}

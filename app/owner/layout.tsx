@@ -30,21 +30,36 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<{ userId: string; full_name: string; role: string } | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return router.push('/auth/login');
-      setUser({
-        userId: data.user.id,
-        full_name: data.user.user_metadata?.full_name ?? 'Owner',
-        role: data.user.user_metadata?.role ?? 'Owner',
-      });
+  async function fetchUser() {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) { router.push('/auth/login'); return; }
+
+    const { data } = await supabase
+      .from('owners')
+      .select('first_name, last_name')
+      .eq('supabase_uid', authUser.id)
+      .single();
+
+    setUser({
+      userId: authUser.id,
+      full_name: data ? `${data.first_name} ${data.last_name}` : authUser.email ?? 'Owner',
+      role: 'Owner',
     });
-  }, []);
+  }
+  fetchUser();
+}, [router]);
 
   if (!user) return null;
 
   return (
     <div className="flex min-h-screen bg-bg">
-      <Sidebar navItems={NAV_ITEMS} onSignOut={() => router.push('/auth/login')} />
+      <Sidebar
+          navItems={NAV_ITEMS}
+          onSignOut={async () => {
+            await supabase.auth.signOut();
+            router.push('/auth/login');
+          }}
+        />
       <div className="flex-1 flex flex-col md:ml-[240px]">
         <Topbar title="Dashboard" user={user} />
         <main className="flex-1 p-6">{children}</main>

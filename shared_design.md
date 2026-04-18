@@ -1,3 +1,6 @@
+All page must follow this. if they not, you can edit it to align to this design.
+this is the staff/dashboard do not use the logic, just the design from fonts to color to page color.
+
 // staff/dashboard/page.tsx
 'use client';
 import { useEffect } from 'react';

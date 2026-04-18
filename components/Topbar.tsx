@@ -12,6 +12,21 @@ interface TopbarProps {
   };
 }
 
+const IconUser = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const IconLogOut = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
 export function Topbar({ title, user }: TopbarProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -32,6 +47,7 @@ export function Topbar({ title, user }: TopbarProps) {
       </h1>
 
       <div className="flex items-center gap-3">
+        {/* Name on top, role below — hidden on very small screens */}
         <div className="hidden sm:flex flex-col items-end">
           <span className="font-[family-name:var(--font-body)] text-sm font-medium text-[var(--ink)] leading-tight">
             {user.full_name}
@@ -41,18 +57,30 @@ export function Topbar({ title, user }: TopbarProps) {
           </span>
         </div>
 
-        <span className="bg-[var(--p-tint)] text-[var(--p)] text-xs font-semibold font-[family-name:var(--font-body)] px-3 py-1 rounded-full border border-[var(--p)]/20">
-          {user.role}
-        </span>
+        {/* Violet avatar icon — replaces the duplicate role pill */}
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: 'linear-gradient(135deg, #7B2CBF, #A66DD4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            flexShrink: 0,
+          }}
+        >
+          <IconUser size={18} />
+        </div>
 
+        {/* Logout */}
         <button
           onClick={handleLogout}
           className="text-[var(--ink-3)] hover:text-red-500 transition-colors px-2 py-1 rounded-md hover:bg-red-50/50"
           aria-label="Logout"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 12H9m0 0l3-3m-3 3l3 3" />
-          </svg>
+          <IconLogOut size={20} />
         </button>
       </div>
     </header>

@@ -1,6 +1,5 @@
 // app/admin/layout.tsx
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
@@ -63,34 +62,36 @@ const pageTitles: Record<string, string> = {
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [user, setUser] = useState<{ userId: string; full_name: string; role: string } | null>(null);
+    const router = useRouter();
+    const pathname = usePathname();
+    const [user, setUser] = useState<{ userId: string; full_name: string; role: string } | null>(null);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) { router.push('/auth/login'); return; }
+    useEffect(() => {
+      async function fetchUser() {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) { router.push('/auth/login'); return; }
 
-      const { data } = await supabase
-        .from('staff_accounts')
-        .select('full_name, role')
-        .eq('supabase_uid', session.user.id)
-        .single();
+        const { data } = await supabase
+          .from('staff_accounts')
+          .select('full_name, role')
+          .eq('supabase_uid', authUser.id)
+          .single();
 
-      setUser({
-        userId: session.user.id,
-        full_name: data?.full_name ?? session.user.email ?? '',
-        role: data?.role ?? 'Admin',
-      });
-    });
-  }, [router]);
+        setUser({
+          userId: authUser.id,
+          full_name: data?.full_name ?? authUser.email ?? '',
+          role: data?.role ?? 'Admin',
+        });
+      }
+      fetchUser();
+    }, [router]);
 
   const title = pageTitles[pathname] ?? 'Admin';
 
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-bg">
       <Sidebar
         navItems={navItems}
         onSignOut={async () => {

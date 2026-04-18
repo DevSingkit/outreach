@@ -40,7 +40,7 @@ const staffSchema = z.object({
   first_name: z.string().min(1, 'Required'),
   last_name:  z.string().min(1, 'Required'),
   email:      z.string().email('Invalid email'),
-  role:       z.enum(['Staff', 'Vet', 'Admin']),
+  role:       z.enum(['Staff', 'Admin']),
   password:   z.string().min(10, 'Min 10 characters').regex(/[A-Z]/, '1 uppercase required').regex(/[0-9]/, '1 number required'),
 });
 type StaffForm = z.infer<typeof staffSchema>;
@@ -73,7 +73,6 @@ function FocusInput({ as: Tag = 'input', ...props }: { as?: 'input' | 'select' |
 // ─── Role badge colours ───────────────────────────────────────────────────────
 const roleColours: Record<string, { bg: string; color: string }> = {
   Admin: { bg: '#F3E8FF', color: '#7B2CBF' },
-  Vet:   { bg: '#D1ECF1', color: '#0C5460' },
   Staff: { bg: '#E2E3E5', color: '#383D41' },
 };
 
@@ -91,26 +90,25 @@ export default function AdminStaffPage() {
   });
 
   const onSubmit = async (data: StaffForm) => {
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
-      user_metadata: { role: data.role },
-      email_confirm: true,
-    });
-    if (authError) throw new Error(authError.message);
-
-    const { error: insertError } = await supabase
-      .from('staff_accounts')
-      .insert({
-        supabase_uid: authData.user.id,
-        full_name: `${data.first_name} ${data.last_name}`,
-        email: data.email,
-        role: data.role,
-        is_active: true,
+    setIsSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-    if (insertError) throw new Error(insertError.message);
-  await mutate(); setShowModal(false); reset();
-  };  // ← closes onSubmit
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      await mutate();
+      setShowModal(false);
+      reset();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const toggleActive = async (id: string, current: boolean) => {
     const { error } = await supabase
@@ -295,7 +293,6 @@ export default function AdminStaffPage() {
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#A8A8A8', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Role *</label>
                 <FocusInput as="select" {...register('role')}>
                   <option value="Staff">Staff</option>
-                  <option value="Vet">Vet</option>
                   <option value="Admin">Admin</option>
                 </FocusInput>
               </div>

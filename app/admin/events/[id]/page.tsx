@@ -93,7 +93,7 @@ export default function AdminEventDetailPage({ params }: { params: Promise<{ id:
   } finally {
     setIsSaving(false);
   }
-};  // ← this was missing
+};
 
 const handleStatusChange = async (status: string) => {
   const { error: statusError } = await supabase
